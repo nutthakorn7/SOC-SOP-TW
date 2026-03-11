@@ -1,4 +1,4 @@
-<h1 align="center">🚨 PB-09: Add_Defender_Exclusion.cmd detected as Malware</h1>
+<h1 align="center">🚨 PB-09: Add_Defender_Exclusion.cmd detected</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Severity-🔴 CRITICAL-red?style=for-the-badge" />
@@ -12,18 +12,18 @@
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
-| **Alert** | `Add_Defender_Exclusion.cmd detected as Malware, Chair` |
-| **ประเภท** | Defense Evasion — Disable/Modify Security Tools |
-| **True Positive Rate** | สูงมาก — Script เปิดทางให้มัลแวร์ |
-| **SLA** | ≤ **15 นาที** |
+| **Alert** | `Add_Defender_Exclusion.cmd detected as Malware` |
+| **ประเภท** | Defense Evasion — ปิด/แก้ไข Security Tool |
+| **True Positive Rate** | สูงมาก |
+| **SLA** | 15 นาที |
 
 > [!CAUTION]
-> **Add_Defender_Exclusion.cmd** = Script ที่ **เพิ่ม Exclusion ใน Windows Defender**
-> 
-> 🔴 **อันตรายมาก** เพราะบ่งชี้ว่า:
-> - มัลแวร์กำลัง **เปิดประตู** ก่อนวางตัวเอง
-> - **Path ที่ถูก Exclude = จุดที่มัลแวร์จะซ่อน**
-> - อาจมี Ransomware, Cryptominer, หรือ Backdoor ตามมา
+> Script นี้ **เพิ่ม Exclusion ใน Windows Defender** เพื่อเปิดทางให้มัลแวร์
+>
+> ทำไมอันตราย? เพราะ **Path ที่ถูก Exclude = จุดที่มัลแวร์จะซ่อนตัว**
+> หลังจากปิด Defender แล้ว มักมี Ransomware, Cryptominer, หรือ Backdoor ตามมา
+>
+> พูดง่ายๆ คือ Script นี้เป็น "คนเปิดประตู" ให้มัลแวร์ตัวจริงเข้ามา
 
 ---
 
@@ -31,75 +31,87 @@
 
 ```mermaid
 flowchart TD
-    A["🚨 Alert: Add_Defender_Exclusion.cmd"] --> B["Step 1: IMMEDIATE ACTION\nKill + Quarantine + Isolate"]
-    B --> C["Step 2: วิเคราะห์ Script\nดู Exclusion Path / Extension"]
-    C --> D["Step 3: วิเคราะห์ Storyline\nดูก่อน/หลัง Script รัน"]
-    D --> E{"มี Malware ใน\nExcluded Path?"}
-    E -->|"✅ ใช่"| F["🔴 พบ Malware ซ่อน!"]
-    E -->|"❌ ไม่แน่ใจ"| G["Step 5: Full Scan\nค้นหาใน Excluded Path"]
-    F --> H["Step 4: ตรวจ Defender Exclusions\nRemote Shell"]
+    A["Alert: Add_Defender_Exclusion.cmd"] --> B["IMMEDIATE:\nKill + Quarantine + Isolate"]
+    B --> C["วิเคราะห์ Script\nดู Exclusion Path"]
+    C --> D["ดู Storyline\nก่อน/หลัง Script รัน"]
+    D --> E{"มี Malware ซ่อน\nใน Excluded Path?"}
+    E -->|"มี!"| F["พบ Malware ซ่อน!"]
+    E -->|"ไม่แน่ใจ"| G["Full Scan\nค้นหาใน Excluded Path"]
+    F --> H["ตรวจ Defender Exclusions\nด้วย Remote Shell"]
     G --> H
-    H --> I["Step 6: ลบ Exclusions\n+ Enable Real-time Protection"]
+    H --> I["ลบ Exclusions + เปิด Defender กลับ"]
     I --> J["Remediate + ลบ Persistence"]
-    J --> K["Step 7: Scope Analysis\nค้นหา Add-MpPreference"]
+    J --> K["Scope Analysis"]
     K --> L{"พบหลายเครื่อง?"}
-    L -->|"✅ ใช่"| M["🔴 Isolate ทุกเครื่อง"]
-    L -->|"❌ ไม่"| N["Step 8: Post-Check\nยืนยัน Defender กลับมา"]
+    L -->|"ใช่"| M["Isolate ทุกเครื่อง"]
+    L -->|"ไม่"| N["Post-Check + ปิด Ticket"]
     M --> N
-    N --> O["ปิด Ticket — True Positive"]
 
     style A fill:#ff0000,color:#fff
     style F fill:#ff0000,color:#fff
     style M fill:#ff0000,color:#fff
-    style O fill:#51cf66,color:#fff
+    style N fill:#51cf66,color:#fff
 ```
 
 ---
 
 ## ขั้นตอนการทำงาน
 
-### Step 1 — 🚨 IMMEDIATE ACTIONS
+### Step 1 — ทำทันที! ห้ามรอ
 
-| ลำดับ | ⚡ ดำเนินการทันที | วิธีทำ |
-|:-----:|:-----------------|:------|
-| 1️⃣ | **Kill + Quarantine** | Actions → "Kill" → "Quarantine" |
-| 2️⃣ | **Isolate เครื่อง** | Actions → "Disconnect from Network" |
-| 3️⃣ | จดบันทึก **Command Line** ⭐ | — |
-| 4️⃣ | เปิด Ticket — **Critical** | — |
+เพราะ Alert นี้ Critical — มัลแวร์อาจถูกวางไว้แล้วหรือกำลังจะมา:
 
-### Step 2 — วิเคราะห์เนื้อหา Script ⭐
+1. **Kill + Quarantine** Script ทันที
+2. **Isolate เครื่อง**
+3. จดบันทึก **Command Line** — สำคัญมากเพราะบอกว่า Script ทำอะไร
+4. เปิด Ticket — ตั้ง Critical
 
-ดู Command Line → ค้นหาว่า Script ทำอะไร:
+---
 
-| สิ่งที่หา | ⚠️ ตัวอย่าง | 💀 ความหมาย |
-|:---------|:----------|:-----------|
-| Exclusion Path | `Add-MpPreference -ExclusionPath "C:\Users"` | **จุดซ่อนมัลแวร์** |
-| Exclusion Extension | `-ExclusionExtension ".exe"` | **ประเภทไฟล์ที่ต้องการรัน** |
-| Disable Monitoring | `Set-MpPreference -DisableRealtimeMonitoring $true` | **ปิด Defender ทั้งตัว** |
+### Step 2 — ดู Command Line ว่า Script ทำอะไร
 
-### Step 3 — วิเคราะห์ Storyline
+| หาอะไร | ตัวอย่าง | ความหมาย |
+|:-------|:--------|:---------|
+| Exclusion Path | `Add-MpPreference -ExclusionPath "C:\Users"` | นี่คือที่มัลแวร์จะซ่อน |
+| Exclusion Extension | `-ExclusionExtension ".exe"` | ไฟล์ประเภทนี้จะไม่ถูกสแกน |
+| Disable Monitoring | `Set-MpPreference -DisableRealtimeMonitoring $true` | ปิด Defender ทั้งตัว |
 
-| ช่วงเวลา | สิ่งที่ต้องดู |
-|:---------|:-----------|
-| **ก่อน** Script รัน | Parent Process? ดาวน์โหลดมาจากไหน? |
-| **หลัง** Script รัน | มี Malware ใน Excluded Path? มี Download? |
+จด Excluded Path ไว้ — จะใช้ค้นหามัลแวร์ใน Step ถัดไป
 
-### Step 4 — ตรวจ Defender Exclusions
+---
 
-ใช้ **Remote Shell**:
+### Step 3 — ดู Storyline (ก่อน + หลัง)
+
+| ช่วง | ดูอะไร |
+|:-----|:------|
+| **ก่อน** Script รัน | Parent Process คืออะไร? ดาวน์โหลดมาจากไหน? |
+| **หลัง** Script รัน | มีมัลแวร์ถูกวางไว้ใน Excluded Path ไหม? มี Download ใหม่? |
+
+---
+
+### Step 4 — ตรวจ Defender Exclusions ผ่าน Remote Shell
+
+เข้า Remote Shell แล้วรัน:
 ```powershell
 Get-MpPreference | Select-Object ExclusionPath, ExclusionExtension
 ```
 
+จด Exclusion ทั้งหมดที่พบ
+
+---
+
 ### Step 5 — ค้นหามัลแวร์ที่ซ่อน
 
+ใน Deep Visibility:
 ```
 FilePath Contains "<Excluded Path>" AND EventType = "File Creation"
 ```
 
-→ **Full Scan** เครื่อง: Actions → "Initiate Scan"
+แล้ว Full Scan เครื่อง: Actions → "Initiate Scan"
 
-### Step 6 — ลบ Exclusions + Remediation
+---
+
+### Step 6 — ลบ Exclusions + เปิด Defender กลับ
 
 ```powershell
 Remove-MpPreference -ExclusionPath "C:\Users"
@@ -107,42 +119,49 @@ Set-MpPreference -DisableRealtimeMonitoring $false
 ```
 
 > [!IMPORTANT]
-> ต้องยืนยันว่า:
-> 1. ✅ Exclusion ถูกลบครบ
-> 2. ✅ Real-time Protection เปิดอยู่
-> 3. ✅ Malware ที่ซ่อนถูกลบแล้ว
+> ต้องยืนยัน 3 อย่างนี้ก่อนจบ:
+> 1. Exclusion ถูกลบครบ
+> 2. Real-time Protection เปิดอยู่
+> 3. มัลแวร์ที่ซ่อนอยู่ถูกลบแล้ว
 
-### Step 7 — Scope Analysis
+---
 
+### Step 7 — หาเครื่องอื่น
+
+ค้นหา:
 ```
 CmdLine Contains "Add-MpPreference -ExclusionPath"
 ```
 
-### Step 8 — Post-Check + ปิด Ticket
+ถ้าพบหลายเครื่อง → Isolate ทั้งหมดแล้วแจ้ง SOC Manager
 
-⏱️ รอ 30 นาที → ตรวจสอบ → ปลด Quarantine → **Verdict = True Positive**
+---
+
+### Step 8 — ตรวจซ้ำแล้วปิด Ticket
+
+รอ 30 นาที → ยืนยันว่า Defender ทำงานปกติ → ปลด Quarantine → **Verdict = True Positive เสมอ**
 
 ---
 
 ## เมื่อไหร่ต้องแจ้งหัวหน้า
 
-| สถานการณ์ | 🎬 ดำเนินการ |
-|:---------|:------------|
-| พบ Ransomware ซ่อนใน Excluded Path | 🔴🔴 แจ้ง SOC Manager + **IR Team** |
-| พบหลายเครื่อง | 🔴 แจ้ง SOC Manager |
-| Defender ถูกปิดทั้งตัว | 🔴 แจ้ง SOC Manager |
-| Server / DC โดน | 🔴 แจ้ง SOC Manager + **IT Team** |
+| สถานการณ์ | แจ้งใคร |
+|:---------|:--------|
+| พบ Ransomware ซ่อนใน Excluded Path | SOC Manager + IR Team **ทันที** |
+| พบหลายเครื่อง | SOC Manager |
+| Defender ถูกปิดทั้งตัว | SOC Manager |
+| Server / DC โดน | SOC Manager + IT Team |
 
 ---
 
 ## ป้องกันไม่ให้เจออีก
 
-- ✅ **Enable Tamper Protection** ใน Windows Defender
-- ✅ **Disable** สิทธิ์ผู้ใช้เปลี่ยน Defender Settings (Group Policy)
-- ✅ จำกัด `Add-MpPreference` ผ่าน PowerShell Constrained Language Mode
-- ✅ ตั้ง **Symantec Email Security** Block `.cmd`, `.bat` จาก Email Attachments
-- ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
-- ✅ Block C2 IP ที่ **Fortigate** และ **Palo Alto**
+- **Enable Tamper Protection** ใน Windows Defender — ป้องกันไม่ให้ Script แก้ไข Settings
+- **Disable** สิทธิ์ผู้ใช้เปลี่ยน Defender Settings ผ่าน Group Policy
+- จำกัด `Add-MpPreference` ด้วย PowerShell Constrained Language Mode
+- ตั้ง **Symantec** Block `.cmd`, `.bat` จาก Email Attachments
+- ตั้ง SentinelOne เป็น **Protect** mode
+- Block C2 IP ที่ **Fortigate** และ **Palo Alto**
 
 ---
 

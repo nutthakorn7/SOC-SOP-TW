@@ -13,15 +13,17 @@
 | รายการ | รายละเอียด |
 |:------:|:-----------|
 | **Alert** | `svchost.exe detected as Malware` |
-| **ประเภท** | Masquerading / Process Injection |
-| **True Positive Rate** | ปานกลาง — ต้องตรวจสอบ Path + Behavior |
-| **SLA** | ≤ 30 นาที |
+| **ประเภท** | ปลอมชื่อ / Process Injection |
+| **True Positive Rate** | ปานกลาง — ต้องดู Path + Parent Process |
+| **SLA** | 30 นาที |
 
 > [!IMPORTANT]
-> **svchost.exe** เป็น Process หลักของ Windows — ปกติมีหลายตัวทำงานพร้อมกัน
+> `svchost.exe` เป็น Process หลักของ Windows — ปกติมีรันอยู่หลายสิบตัวพร้อมกัน
 >
-> | คุณสมบัติ | ✅ ตัวจริง | ❌ ของปลอม |
-> |:---------|:---------|:---------|
+> วิธีแยกตัวจริงจากของปลอม:
+>
+> | | ตัวจริง | ของปลอม |
+> |:--|:-------|:-------|
 > | **Path** | `C:\Windows\System32\svchost.exe` | ที่อื่น |
 > | **Parent** | `services.exe` | อื่นๆ |
 > | **Signature** | Microsoft Windows | ไม่มี |
@@ -33,106 +35,118 @@
 
 ```mermaid
 flowchart TD
-    A["🔔 Alert: svchost.exe detected"] --> B["Step 1: เปิด Ticket\nจดบันทึก File Path + Parent"]
-    B --> C{"Step 2: File Path?"}
-    C -->|"System32"| D["Step 3: ตรวจ Parent,\nCmdLine, Signature"]
-    C -->|"Path อื่น"| E["🔴 ปลอมแน่นอน!\nTrue Positive"]
+    A["Alert: svchost.exe detected"] --> B["เปิด Ticket\nจด Path + Parent"]
+    B --> C{"File Path?"}
+    C -->|"System32"| D["ตรวจ Parent, CmdLine,\nSignature"]
+    C -->|"Path อื่น"| E["ปลอมแน่นอน!\nTrue Positive"]
     D --> F{"Parent = services.exe?\nCmdLine มี -k?"}
-    F -->|"✅ ปกติ"| G["Step 4: ตรวจ Memory Injection\nDLL จากนอก System32?"]
-    F -->|"❌ ผิดปกติ"| E
+    F -->|"ปกติ"| G["ตรวจ Memory Injection\nDLL จากนอก System32?"]
+    F -->|"ผิดปกติ"| E
     G --> H{"พบ Injection?"}
-    H -->|"✅ ใช่"| I["True Positive\nProcess Injection"]
-    H -->|"❌ ไม่"| J["ตรวจ Hash VirusTotal"]
-    E --> K["Step 5-6: Hash + Scope Analysis"]
+    H -->|"พบ"| I["True Positive\nProcess Injection"]
+    H -->|"ไม่พบ"| J["เช็ค VT เพิ่ม"]
+    E --> K["Hash + Scope Analysis"]
     I --> K
     J --> K
-    K --> L["Step 7: Containment\nQuarantine + Kill"]
-    L --> M{"Process Injection?"}
-    M -->|"✅ ใช่"| N["Step 8: Reboot + ลบ DLL"]
-    M -->|"❌ ไม่"| O["Step 8: Remediate + Rollback"]
-    N --> P["Step 9-10: Post-Check + ปิด Ticket"]
-    O --> P
+    K --> L["Containment + Remediate"]
 
     style A fill:#ff6b6b,color:#fff
     style E fill:#ff0000,color:#fff
     style I fill:#ff922b,color:#fff
-    style P fill:#51cf66,color:#fff
+    style L fill:#51cf66,color:#fff
 ```
 
 ---
 
 ## ขั้นตอนการทำงาน
 
-### Step 1 — รับ Alert และเปิด Incident Ticket
-จดบันทึก **File Path**, SHA256 Hash, Parent Process, Command Line Arguments
+### Step 1 — เปิด Ticket
 
-### Step 2 — ตรวจสอบ File Path ⭐
+จด File Path, Hash, Parent Process, Command Line — ข้อมูลพวกนี้จะใช้ตัดสินใจใน Step ถัดไป
 
-| ผลตรวจสอบ | ➡️ ขั้นตอนถัดไป |
-|:---------|:--------------|
-| Path = `C:\Windows\System32\` | ไป Step 3 (ตรวจเพิ่ม) |
-| Path ≠ System32 | 🔴 **ปลอมแน่นอน** → ข้ามไป Step 5 |
+---
 
-### Step 3 — ตรวจสอบ svchost.exe ใน System32
+### Step 2 — ดู File Path ก่อน
 
-| รายการ | ✅ ปกติ | ❌ น่าสงสัย |
-|:------|:-------|:----------|
+เหมือนกับ PB-02 (spoolsv) — **Path คือตัวตัดสินแรก**:
+
+- Path = `System32` → ต้องตรวจเพิ่ม (Step 3)
+- Path อื่น → **ปลอมแน่นอน** ไม่ต้องสงสัย → ข้ามไป Step 5
+
+---
+
+### Step 3 — ตรวจสอบ svchost ใน System32
+
+| ตรวจอะไร | ปกติ | น่าสงสัย |
+|:---------|:-----|:--------|
 | Parent Process | `services.exe` | อื่นๆ |
 | Command Line | `-k netsvcs` หรือ `-k LocalService` | ไม่มี `-k` |
 | Network | Microsoft Services เท่านั้น | IP ที่ไม่รู้จัก |
 | Loaded DLLs | จาก System32 ทั้งหมด | DLL จาก Users/Temp/AppData |
 
-### Step 4 — ตรวจสอบ Process Injection
+---
+
+### Step 4 — ตรวจหา Process Injection
 
 > [!WARNING]
-> สัญญาณของ Process Injection:
-> - Memory Injection / DLL Injection Alert
+> ถ้า svchost.exe ตัวจริงถูก Inject จะเห็นสัญญาณเหล่านี้:
 > - Memory Usage สูงผิดปกติ
 > - Network Traffic ไปยัง IP ที่ไม่ใช่ Microsoft
+> - DLL ถูกโหลดจาก Path ที่ไม่ใช่ System
+>
+> Process Injection เป็นเทคนิคที่มัลแวร์ระดับสูง (เช่น Cobalt Strike) ใช้ — ถ้าพบต้อง Escalate
 
-### Step 5-6 — Hash Check + Scope Analysis
+---
 
-ค้นหาใน VirusTotal + Deep Visibility
+### Step 5-6 — เช็ค VT + หาเครื่องอื่น
 
-### Step 7 — Containment
+ตรวจ Hash ใน VirusTotal แล้วค้นหาใน Deep Visibility
 
-| ลำดับ | การดำเนินการ | ⚠️ ข้อควรระวัง |
-|:-----:|:------------|:-------------|
-| 1️⃣ | Network Quarantine | — |
-| 2️⃣ | Kill Process | svchost ปลอม → Kill ปลอดภัย / ตัวจริง → Windows Restart |
-| 3️⃣ | Quarantine File | — |
+---
 
-### Step 8 — Remediation
+### Step 7 — กักกัน
 
-| กรณี | การแก้ไข |
-|:-----|:--------|
-| **ปลอมชื่อ (Path อื่น)** | Remediate + Rollback + ลบ Service/Persistence |
-| **Process Injection** | Reboot เคลียร์ Memory + ลบ DLL ที่ Inject |
+| ทำอะไร | หมายเหตุ |
+|:------|:--------|
+| Isolate เครื่อง | — |
+| Kill Process | svchost ปลอม → Kill ได้เลย / ตัวจริง → Windows อาจ Restart |
+| Quarantine File | — |
 
-### Step 9-10 — Post-Check + ปิด Ticket
+---
 
-⏱️ รอ 15-30 นาที → ตรวจสอบ → ปลด Quarantine → ปิด Ticket
+### Step 8 — แก้ไข
+
+| กรณี | ทำอย่างไร |
+|:-----|:---------|
+| **ปลอมชื่อ** | Remediate + Rollback + ลบ Service/Persistence |
+| **Process Injection** | **Reboot** เพื่อเคลียร์ Memory + ลบ DLL ที่ Inject |
+
+---
+
+### Step 9 — ตรวจซ้ำแล้วปิด Ticket
+
+รอ 15-30 นาที → ตรวจ Alert ใหม่ → ปลด Quarantine → ปิด Ticket
 
 ---
 
 ## เมื่อไหร่ต้องแจ้งหัวหน้า
 
-| สถานการณ์ | 🎬 ดำเนินการ |
-|:---------|:------------|
-| ยืนยัน Process Injection ใน svchost จริง | 🔴 แจ้ง SOC Manager + **IR Team** |
-| พบ Cobalt Strike / APT Framework | 🔴 แจ้ง SOC Manager **ทันที** |
-| Domain Controller ถูกโจมตี | 🔴 แจ้ง SOC Manager + **IT Team ทันที** |
+| สถานการณ์ | แจ้งใคร |
+|:---------|:--------|
+| ยืนยัน Process Injection ใน svchost จริง | SOC Manager + IR Team |
+| พบ Cobalt Strike / APT Framework | SOC Manager **ทันที** |
+| Domain Controller ถูกโจมตี | SOC Manager + IT Team **ทันที** |
 
 ---
 
 ## ป้องกันไม่ให้เจออีก
 
-- ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
-- ✅ Enable **Anti-Tampering**
-- ✅ จำกัด Admin Privileges (Least Privilege)
-- ✅ Monitor `svchost.exe` นอก System32
-- ✅ ติดตั้ง Windows Security Updates สม่ำเสมอ
-- ✅ Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
+- ตั้ง SentinelOne เป็น **Protect** mode
+- Enable **Anti-Tampering**
+- จำกัด Admin Privileges (Least Privilege)
+- Monitor `svchost.exe` นอก System32 ด้วย Deep Visibility
+- ติดตั้ง Windows Security Updates สม่ำเสมอ
+- Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
 
 ---
 

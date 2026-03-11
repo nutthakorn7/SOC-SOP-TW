@@ -14,13 +14,13 @@
 |:------:|:-----------|
 | **Alert** | `conres.dll detected as Malware` |
 | **ประเภท** | DLL Injection / DLL Hijacking |
-| **True Positive Rate** | สูง — ไม่ใช่ DLL มาตรฐานของ Windows |
-| **SLA** | ≤ 30 นาที |
+| **True Positive Rate** | สูง — ไม่ใช่ DLL ของ Windows |
+| **SLA** | 30 นาที |
 
 > [!CAUTION]
-> **conres.dll ไม่ใช่ DLL มาตรฐานของ Windows** → มีโอกาสสูงที่จะเป็น **True Positive**
-> 
-> DLL เป็นไฟล์ที่มัลแวร์ชอบใช้เพราะ: ไม่รันด้วยตัวเอง → ต้องถูกโหลดโดย Process อื่น → **ยากต่อการตรวจจับ**
+> `conres.dll` ไม่ใช่ DLL มาตรฐานของ Windows — โอกาสเป็น True Positive สูงมาก
+>
+> DLL เป็นไฟล์ที่มัลแวร์ชอบใช้ เพราะไม่รันเอง ต้องถูกโหลดโดย Process อื่น ทำให้ตรวจจับยากกว่าไฟล์ .exe
 
 ---
 
@@ -28,99 +28,102 @@
 
 ```mermaid
 flowchart TD
-    A["🔔 Alert: conres.dll detected"] --> B["Step 1: เปิด Ticket\nจดบันทึก Hash + Process ที่โหลด"]
-    B --> C["Step 2: ตรวจ Process ที่โหลด DLL"]
+    A["Alert: conres.dll detected"] --> B["เปิด Ticket\nจด Hash + Process ที่โหลด DLL"]
+    B --> C["ตรวจ Process ที่โหลด DLL"]
     C --> D{"โหลดโดย Process อะไร?"}
-    D -->|"rundll32 / regsvr32"| E["🔴 น่าสงสัยมาก"]
-    D -->|"svchost.exe"| F["🔴 Service Hijacking"]
-    D -->|"Known Application"| G["ตรวจสอบเพิ่มเติม"]
-    E --> H["Step 3-4: ตรวจ Path + Hash\nVirusTotal"]
+    D -->|"rundll32 / regsvr32"| E["น่าสงสัยมาก"]
+    D -->|"svchost.exe"| F["Service Hijacking"]
+    D -->|"Known App"| G["ตรวจเพิ่ม"]
+    E --> H["เช็ค Path + Hash + VT"]
     F --> H
     G --> H
-    H --> I["Step 5: วิเคราะห์ Storyline\nดูก่อน/หลัง DLL โหลด"]
+    H --> I["ดู Storyline ก่อน/หลัง"]
     I --> J{"มี C2 / Credential Dump?"}
-    J -->|"✅ ใช่"| K["🔴 Escalate ทันที"]
-    J -->|"❌ ไม่"| L["Step 6: Scope Analysis"]
+    J -->|"มี"| K["Escalate ทันที"]
+    J -->|"ไม่"| L["Scope Analysis"]
     K --> L
-    L --> M["Step 7-8: Containment + Remediate\nลบ DLL + Persistence"]
-    M --> N["Step 9-10: Post-Check + ปิด Ticket"]
+    L --> M["Containment + Remediate"]
 
     style A fill:#ff6b6b,color:#fff
     style E fill:#ff0000,color:#fff
-    style F fill:#ff0000,color:#fff
     style K fill:#ff0000,color:#fff
-    style N fill:#51cf66,color:#fff
+    style M fill:#51cf66,color:#fff
 ```
 
 ---
 
 ## ขั้นตอนการทำงาน
 
-### Step 1 — รับ Alert และเปิด Incident Ticket
-จดบันทึก File Path, SHA256 Hash, **Process ที่โหลด DLL** ⭐
+### Step 1 — เปิด Ticket
 
-### Step 2 — ตรวจสอบ Process ที่โหลด DLL ⭐
+จด File Path, Hash, และที่สำคัญที่สุดคือ **Process ไหนโหลด DLL นี้** — เพราะจะบอกได้ว่าเทคนิคอะไร
 
-| Process ที่โหลด DLL | 🚦 ความเสี่ยง |
-|:--------------------|:-------------|
-| `rundll32.exe` | 🔴 **น่าสงสัยมาก** — มัลแวร์ใช้ rundll32 รัน DLL |
-| `regsvr32.exe` | 🔴 **น่าสงสัย** — Silent Registration |
-| `svchost.exe` | 🔴 **Service Hijacking** |
-| `explorer.exe` | 🟠 **DLL Hijacking** |
-| ซอฟต์แวร์ที่รู้จัก | 🟡 ตรวจสอบเพิ่ม — อาจ FP |
+---
 
-### Step 3 — ตรวจสอบ File Path
+### Step 2 — ดูว่า Process ไหนโหลด DLL
 
-| File Path | 🚦 ความเสี่ยง |
-|:---------|:-------------|
-| `C:\Windows\Temp\` | 🔴 **สูง** |
-| `C:\Users\<user>\AppData\` | 🔴 **สูง** |
-| `C:\ProgramData\` | 🔴 **สูงมาก** |
-| ร่วมกับ Application ที่ติดตั้ง | 🟡 ต่ำ-กลาง |
+| Process ที่โหลด | ความหมาย |
+|:---------------|:---------|
+| `rundll32.exe` | น่าสงสัยมาก — มัลแวร์ชอบใช้ rundll32 รัน DLL |
+| `regsvr32.exe` | น่าสงสัย — Silent Registration |
+| `svchost.exe` | Service Hijacking — ยึด Service ของ Windows |
+| `explorer.exe` | DLL Hijacking — วาง DLL ปลอมให้ Explorer โหลด |
+| ซอฟต์แวร์ที่รู้จัก | ตรวจเพิ่ม — อาจเป็น FP ก็ได้ |
 
-### Step 4 — ตรวจ Hash VirusTotal
-ค้นหา Hash → ดู Detection Rate, Family Name, Behavior Tab
+---
 
-### Step 5 — วิเคราะห์ Storyline (ก่อน + หลัง)
+### Step 3 — ตรวจ Path + Hash
 
-| ช่วงเวลา | สิ่งที่ต้องดู |
-|:---------|:-----------|
-| **ก่อน** DLL โหลด | มาจาก Email? Download? USB? มี Dropper? |
-| **หลัง** DLL โหลด | Network Connection? สร้างไฟล์? Registry? Credential Dump? |
+**File Path** ที่ต้องระวัง:
+- `C:\Windows\Temp\` — เสี่ยงสูง
+- `C:\Users\<user>\AppData\` — เสี่ยงสูง
+- `C:\ProgramData\` — เสี่ยงสูงมาก
 
-### Step 6-8 — Containment + Remediation
+Copy Hash ไปเช็ค [VirusTotal](https://www.virustotal.com) → ดู Detection Rate, Family Name, Behavior
 
-| ลำดับ | การดำเนินการ |
-|:-----:|:------------|
-| 1️⃣ | **Network Quarantine** เครื่อง |
-| 2️⃣ | **Kill** Process ที่โหลด DLL |
-| 3️⃣ | **Quarantine** file `conres.dll` + Dropper |
-| 4️⃣ | **Remediate** + ลบ Persistence (Services, Registry, Scheduled Tasks) |
+---
 
-### Step 9-10 — Post-Check + ปิด Ticket
-⏱️ รอ 15-30 นาที → ตรวจสอบ → ปลด Quarantine → ปิด Ticket
+### Step 4 — ดู Storyline (ก่อน + หลัง)
+
+DLL Injection มักมีหลายขั้นตอน ดูทั้งก่อนและหลัง:
+
+| ช่วง | สิ่งที่ต้องดู |
+|:-----|:-----------|
+| **ก่อน** DLL โหลด | มาจาก Email? Download? USB? มี Dropper วางไฟล์ก่อน? |
+| **หลัง** DLL โหลด | มี Network Connection? สร้างไฟล์เพิ่ม? แก้ Registry? Dump Credentials? |
+
+---
+
+### Step 5-7 — กักกัน + แก้ไข
+
+1. **Isolate เครื่อง**
+2. **Kill** Process ที่โหลด DLL
+3. **Quarantine** ไฟล์ `conres.dll` + Dropper (ถ้ามี)
+4. **Remediate** + ลบ Persistence (Services, Registry, Scheduled Tasks)
+
+รอ 15-30 นาที → ตรวจ Alert ใหม่ → ปลด Quarantine → ปิด Ticket
 
 ---
 
 ## เมื่อไหร่ต้องแจ้งหัวหน้า
 
-| สถานการณ์ | 🎬 ดำเนินการ |
-|:---------|:------------|
-| DLL เป็น Cobalt Strike Beacon | 🔴 แจ้ง SOC Manager + **IR Team ทันที** |
-| มี Data Exfiltration | 🔴 แจ้ง SOC Manager + **Management** |
-| มี Credential Dumping | 🔴 แจ้ง SOC Manager + **IT (Reset Passwords)** |
-| พบ DLL หลายเครื่อง | 🟠 แจ้ง SOC Manager |
+| สถานการณ์ | แจ้งใคร |
+|:---------|:--------|
+| DLL เป็น Cobalt Strike Beacon | SOC Manager + IR Team **ทันที** |
+| มี Data Exfiltration | SOC Manager + Management |
+| มี Credential Dumping | SOC Manager + IT (Reset Passwords) |
+| พบ DLL หลายเครื่อง | SOC Manager |
 
 ---
 
 ## ป้องกันไม่ให้เจออีก
 
-- ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
-- ✅ Enable **DLL Load Monitoring** ใน Deep Visibility
-- ✅ จำกัด `rundll32.exe` / `regsvr32.exe` ด้วย Application Control
-- ✅ Monitor DLL ในโฟลเดอร์ `Temp`, `AppData`, `ProgramData`
-- ✅ Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
-- ✅ ตั้ง **Symantec Email Security** กรอง DLL ใน Email Attachment
+- ตั้ง SentinelOne เป็น **Protect** mode
+- Enable **DLL Load Monitoring** ใน Deep Visibility
+- จำกัด `rundll32.exe` / `regsvr32.exe` ด้วย Application Control
+- Monitor DLL ในโฟลเดอร์ `Temp`, `AppData`, `ProgramData`
+- Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
+- ตั้ง **Symantec** กรอง DLL ใน Email Attachment
 
 ---
 

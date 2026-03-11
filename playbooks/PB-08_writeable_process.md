@@ -14,16 +14,18 @@
 |:------:|:-----------|
 | **Alert** | `Writeable Process Creation detected` |
 | **ประเภท** | Process Hollowing / Reflective Injection / Shellcode |
-| **True Positive Rate** | สูง — แต่บาง Dev Tools อาจทำให้เกิด FP |
-| **SLA** | ≤ 30 นาที |
+| **True Positive Rate** | สูง — แต่บาง Dev Tools อาจ FP |
+| **SLA** | 30 นาที |
 
 > [!CAUTION]
-> **Writeable Process Creation** = Memory Region เป็น **Write+Execute (WX)** ซึ่งผิดปกติ
-> 
-> เทคนิคที่ใช้:
-> - 💀 **Process Hollowing** — สร้าง Process ปกติ แล้วแทนที่ Code ด้วย Malware
-> - 💀 **Reflective DLL Injection** — โหลด DLL เข้า Memory โดยไม่เขียนลง Disk
-> - 💀 **Shellcode Execution** — รัน Payload ใน Memory โดยตรง
+> Alert นี้หมายความว่ามี Memory Region ที่เป็น **Write+Execute** ซึ่งผิดปกติ
+>
+> เทคนิคที่ทำให้เกิด Alert นี้:
+> - **Process Hollowing** — สร้าง Process ปกติ แล้วแทนที่ Code ข้างในด้วย Malware
+> - **Reflective DLL Injection** — โหลด DLL เข้า Memory แบบไม่เขียนลง Disk
+> - **Shellcode Execution** — รัน Payload ใน Memory โดยตรง
+>
+> เทคนิคเหล่านี้เป็นของมัลแวร์ระดับสูง เช่น Cobalt Strike, Meterpreter
 
 ---
 
@@ -31,111 +33,107 @@
 
 ```mermaid
 flowchart TD
-    A["🔔 Alert: Writeable Process Creation"] --> B["Step 1: เปิด Ticket\nจดบันทึก Process + Parent"]
-    B --> C["Step 2: ตรวจ Process ที่ถูก Detect"]
+    A["Alert: Writeable Process Creation"] --> B["เปิด Ticket\nจด Process + Parent"]
+    B --> C["ตรวจ Process ที่ถูก Detect"]
     C --> D{"Process Type?"}
-    D -->|"System Process ถูก Hollow"| E["🔴 Process Hollowing"]
-    D -->|"Unknown EXE"| F["🔴 สงสัย Malware"]
-    D -->|"Dev Tool / Security SW"| G["อาจเป็น FP"]
-    D -->|"Game Cheat / Crack"| H["🟠 PUP / Malware"]
-    E --> I["Step 3: วิเคราะห์ Storyline"]
+    D -->|"System Process ถูก Hollow"| E["Process Hollowing"]
+    D -->|"Unknown EXE"| F["สงสัย Malware"]
+    D -->|"Dev Tool / Security SW"| G["อาจ FP"]
+    D -->|"Game Cheat / Crack"| H["PUP / Malware"]
+    E --> I["ดู Storyline + VT"]
     F --> I
-    G --> J["Step 4: ตรวจ Hash VirusTotal"]
+    G --> I
     H --> I
-    I --> J
-    J --> K{"True Positive?"}
-    K -->|"✅ TP"| L["Step 6: Containment\nKill + Quarantine"]
-    K -->|"❌ FP"| M["สร้าง Exclusion + ปิด Ticket"]
-    L --> N["Step 7: Remediate + Reboot\nเคลียร์ Memory"]
-    N --> O["Step 8-9: Scope + Post-Check"]
-    O --> P["ปิด Ticket"]
+    I --> J{"TP หรือ FP?"}
+    J -->|"TP"| K["Containment + Reboot"]
+    J -->|"FP"| L["Exclusion + ปิด Ticket"]
 
     style A fill:#ff6b6b,color:#fff
     style E fill:#ff0000,color:#fff
-    style M fill:#51cf66,color:#fff
-    style P fill:#51cf66,color:#fff
+    style K fill:#51cf66,color:#fff
+    style L fill:#51cf66,color:#fff
 ```
 
 ---
 
 ## ขั้นตอนการทำงาน
 
-### Step 1 — รับ Alert + เปิด Ticket
-จดบันทึก **Process Name**, Process Path, **Parent Process**, SHA256 Hash, Command Line
+### Step 1 — เปิด Ticket
 
-### Step 2 — ตรวจสอบ Process ที่ถูก Detect
+จด **Process Name**, Path, **Parent Process**, Hash, Command Line
 
-| Process Name | 🚦 ความเสี่ยง |
-|:------------|:-------------|
-| `svchost.exe`, `explorer.exe` ถูก Hollow | 🔴 **สูงมาก** — Process Hollowing |
-| Unknown .exe ที่ไม่รู้จัก | 🔴 **สูง** — อาจเป็น Malware |
-| Game Cheat / Crack | 🟠 **สูง** — อาจฝังมัลแวร์ |
-| ซอฟต์แวร์ Security (AV อื่น) | 🟡 **กลาง** — อาจเป็น FP |
-| Development Tools (IDE, Debugger) | 🟡 **กลาง** — JIT Compiler ทำให้เกิด WX |
+---
 
-| Parent Process | 🚦 ระดับ |
-|:-------------|:--------|
-| `powershell.exe`, `cmd.exe` | ⚠️ **น่าสงสัยมาก** |
-| `wscript.exe`, `mshta.exe` | ⚠️ **น่าสงสัยมาก** |
-| ซอฟต์แวร์ที่ Sign แล้ว | ✅ อาจเป็น FP |
+### Step 2 — ดู Process ที่ถูก Detect
 
-### Step 3 — วิเคราะห์ Storyline
+| Process | ความเสี่ยง |
+|:--------|:---------|
+| svchost / explorer ถูก Hollow | **สูงมาก** — Process Hollowing |
+| Unknown .exe ที่ไม่รู้จัก | **สูง** — อาจเป็น Malware |
+| Game Cheat / Crack | **สูง** — มักฝังมัลแวร์ |
+| Security Software (AV อื่น) | **กลาง** — อาจ FP |
+| Dev Tools (IDE, Debugger) | **กลาง** — JIT Compiler ทำให้เกิด WX Memory ได้ |
+
+**Parent Process ที่ต้องระวัง:** `powershell.exe`, `cmd.exe`, `wscript.exe`, `mshta.exe` → ถ้ามาจากพวกนี้ **น่าสงสัยมาก**
+
+---
+
+### Step 3 — ดู Storyline
 
 > [!WARNING]
 > **สัญญาณ Process Hollowing:**
 > 1. Process ถูกสร้างในสถานะ `SUSPENDED`
 > 2. มีการ `WriteProcessMemory`
-> 3. มีการ `ResumeThread` หลัง Write
+> 3. แล้ว `ResumeThread` ตามมา
 >
 > **สัญญาณ Shellcode:**
 > 1. `VirtualAlloc` ด้วย `PAGE_EXECUTE_READWRITE`
 > 2. เขียน Data เข้า Memory แล้วรัน
 
-### Step 4 — ตรวจ Hash VirusTotal
-ดู Detection Rate, Classification, Relations
+---
 
-### Step 5 — ตัดสินใจ
+### Step 4 — เช็ค VT + ตัดสิน
 
-| เงื่อนไข | 🚦 วินิจฉัย |
-|:--------|:----------|
-| Process Hollowing (Suspended→Write→Resume) | ✅ **True Positive** |
-| Unknown Process + C2 Connection | ✅ **True Positive** |
-| Game/Crack Software | ✅ **True Positive** |
-| Dev Tool ที่ Sign แล้ว (JIT Compiler) | ❌ Possible **FP** |
-| Security SW ทำ Runtime Protection | ❌ Possible **FP** |
+| เงื่อนไข | วินิจฉัย |
+|:---------|:--------|
+| Process Hollowing (Suspended→Write→Resume) | **True Positive** |
+| Unknown Process + C2 Connection | **True Positive** |
+| Game/Crack Software | **True Positive** |
+| Dev Tool ที่ Sign แล้ว (JIT Compiler) | อาจ **FP** |
+| Security SW ทำ Runtime Protection | อาจ **FP** |
 
-### Step 6-7 — Containment + Remediation
+---
 
-| ลำดับ | การดำเนินการ |
-|:-----:|:------------|
-| 1️⃣ | **Network Quarantine** |
-| 2️⃣ | **Kill Process** |
-| 3️⃣ | **Quarantine** ไฟล์ |
-| 4️⃣ | **Remediate** |
-| 5️⃣ | **Reboot** เครื่อง → เคลียร์ Memory ที่ถูก Inject |
-| 6️⃣ | ลบ Persistence + **Full Scan** |
+### Step 5-6 — กักกัน + แก้ไข
 
-### Step 8-9 — Scope + Post-Check + ปิด Ticket
+1. **Isolate เครื่อง**
+2. **Kill Process**
+3. **Quarantine ไฟล์**
+4. **Remediate**
+5. **Reboot เครื่อง** → สำคัญ เพราะต้องเคลียร์ Memory ที่ถูก Inject
+6. ลบ Persistence + **Full Scan**
+
+รอ 15-30 นาที → ตรวจ Alert ใหม่ → ปลด Quarantine → ปิด Ticket
 
 ---
 
 ## เมื่อไหร่ต้องแจ้งหัวหน้า
 
-| สถานการณ์ | 🎬 ดำเนินการ |
-|:---------|:------------|
-| ยืนยัน Process Hollowing | 🔴 แจ้ง SOC Manager + **IR Team** |
-| พบ Cobalt Strike / Meterpreter | 🔴🔴 แจ้ง SOC Manager + **IR Team ทันที** |
-| Server / DC โดน | 🔴 แจ้ง SOC Manager + **IT Team ทันที** |
+| สถานการณ์ | แจ้งใคร |
+|:---------|:--------|
+| ยืนยัน Process Hollowing | SOC Manager + IR Team |
+| พบ Cobalt Strike / Meterpreter | SOC Manager + IR Team **ทันที** |
+| Server / DC โดน | SOC Manager + IT Team **ทันที** |
 
 ---
 
 ## ป้องกันไม่ให้เจออีก
 
-- ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
-- ✅ Enable **Memory Protection** Features
-- ✅ จำกัดการใช้ PowerShell (Constrained Language Mode)
-- ✅ Block ซอฟต์แวร์ Crack / Game Cheat
-- ✅ Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
+- ตั้ง SentinelOne เป็น **Protect** mode
+- Enable **Memory Protection** Features
+- จำกัด PowerShell (Constrained Language Mode)
+- Block ซอฟต์แวร์ Crack / Game Cheat ด้วย Application Control
+- Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
 
 ---
 

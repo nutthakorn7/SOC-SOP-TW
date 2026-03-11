@@ -13,14 +13,14 @@
 | รายการ | รายละเอียด |
 |:------:|:-----------|
 | **Alert** | `bwswfcfg.exe detected as General` |
-| **ประเภท** | Unknown / PUP / Possible Zero-day |
-| **True Positive Rate** | ต่ำ-กลาง — ต้องวิเคราะห์เพิ่ม |
-| **SLA** | ≤ 4 ชั่วโมง |
+| **ประเภท** | Unknown / PUP / อาจเป็น Zero-day |
+| **True Positive Rate** | ต่ำ-กลาง |
+| **SLA** | 4 ชั่วโมง |
 
 > [!NOTE]
-> **"General"** หมายความว่า SentinelOne ไม่ได้จัดเป็น Malware โดยตรง แต่พบ **พฤติกรรมน่าสงสัย** จาก AI/Behavioral Analysis
+> "General" หมายความว่า SentinelOne ไม่ได้จัดเป็น Malware โดยตรง แต่พบ **พฤติกรรมน่าสงสัย** จาก AI/Behavioral Analysis
 >
-> ⚠️ แม้ Severity ต่ำ แต่ **ต้องตรวจสอบ** เพราะ อาจเป็นภัยคุกคามจริงที่ยังไม่มี Signature
+> แม้ Severity ต่ำ แต่ **อย่าละเลย** เพราะอาจเป็นภัยคุกคามจริงที่ยังไม่มี Signature (Zero-day)
 
 ---
 
@@ -28,114 +28,105 @@
 
 ```mermaid
 flowchart TD
-    A["🔔 Alert: bwswfcfg.exe General"] --> B["Step 1: เปิด Ticket\nจดบันทึก Hash + Signature"]
-    B --> C["Step 2: ตรวจ Hash VirusTotal"]
-    C --> D{"ผลลัพธ์ VirusTotal?"}
-    D -->|"0 detections + Signed"| E["FP สูง"]
-    D -->|"1-5 detections"| F["น่าสงสัย\nตรวจเพิ่ม"]
-    D -->|"> 10 detections"| G["🔴 Malicious!"]
+    A["Alert: bwswfcfg.exe General"] --> B["เปิด Ticket\nจด Hash + Signature"]
+    B --> C["เช็ค Hash ใน VT"]
+    C --> D{"ผล VT?"}
+    D -->|"0 detections + Signed"| E["น่าจะ FP"]
+    D -->|"1-5 detections"| F["น่าสงสัย ตรวจเพิ่ม"]
+    D -->|"> 10 detections"| G["Malicious!"]
     D -->|"Not Found"| F
-    E --> H["Step 3: ตรวจ Storyline\nเพื่อยืนยัน"]
+    E --> H["ดู Storyline\nเพื่อยืนยัน"]
     F --> H
     G --> I["ยกระดับ Severity"]
-    H --> J{"มี Network / Child Process\n/ Registry Change?"}
-    J -->|"✅ ใช่"| I
-    J -->|"❌ ไม่"| K["Step 5A: False Positive\nสร้าง Exclusion"]
-    I --> L["Step 5B: True Positive\nQuarantine + Remediate"]
-    L --> M["Scope Analysis + Post-Check"]
-    M --> N["ปิด Ticket"]
-    K --> N
+    H --> J{"มี Network / Child Process?"}
+    J -->|"มี"| I
+    J -->|"ไม่"| K["False Positive\nExclusion + ปิด Ticket"]
+    I --> L["True Positive\nContainment + Remediate"]
 
     style A fill:#ffd43b,color:#000
     style G fill:#ff0000,color:#fff
     style K fill:#51cf66,color:#fff
-    style N fill:#51cf66,color:#fff
 ```
 
 ---
 
 ## ขั้นตอนการทำงาน
 
-### Step 1 — รับ Alert + เปิด Ticket
+### Step 1 — เปิด Ticket
 
-| ข้อมูลที่ต้องจด | ⚡ ความสำคัญ |
-|:----------------|:------------|
-| 🖥️ Endpoint Name / IP | ปกติ |
-| 📁 File Path | สูง |
-| 🔑 SHA256 Hash | ⭐ สำคัญ |
-| 📏 File Size | กลาง |
-| ✍️ **Digital Signature** | ⭐ สำคัญ — มี/ไม่มี, Signer เป็นใคร |
+จด Endpoint, Path, Hash, File Size, **Digital Signature** (มีหรือไม่มี Signer เป็นใคร)
 
-Severity เบื้องต้น: **Low**
+Severity เบื้องต้น = Low — แต่อาจยกระดับถ้าพบว่า Malicious
 
-### Step 2 — ตรวจ Hash VirusTotal ⭐
+---
 
-| ผลลัพธ์ VirusTotal | 🚦 วินิจฉัย | ➡️ ถัดไป |
-|:------------------|:----------|:--------|
-| 0/70 + มี Signer ที่รู้จัก | **FP สูง** | ไป Step 5A |
-| 1-5/70 (Generic detection) | **น่าสงสัย** | ทำ Step 3 |
-| > 10/70 engines | 🔴 **Malicious** | ยกระดับ → Step 5B |
-| Not Found | **Unknown** — ต้องวิเคราะห์เพิ่ม | ทำ Step 3 |
+### Step 2 — เช็ค Hash ใน VT ก่อนเลย
 
-### Step 3 — ตรวจ Storyline
+VirusTotal จะบอกได้เร็วที่สุดว่าควรกังวลแค่ไหน:
 
-| พฤติกรรม | ✅ ปกติ (FP) | ❌ ผิดปกติ (TP) |
-|:---------|:----------|:-------------|
+| ผล VT | ความหมาย | ทำอะไรต่อ |
+|:------|:---------|:---------|
+| 0/70 + มี Signer ที่รู้จัก | น่าจะ FP | ดู Storyline ยืนยัน |
+| 1-5/70 (Generic) | น่าสงสัย | ตรวจ Storyline ละเอียด |
+| > 10/70 | **Malicious** | ยกระดับ + Containment |
+| Not Found | Unknown — ต้องวิเคราะห์เอง | ตรวจ Storyline ละเอียด |
+
+---
+
+### Step 3 — ดู Storyline
+
+| พฤติกรรม | ปกติ (FP) | ผิดปกติ (TP) |
+|:---------|:---------|:-----------|
 | Network Connection | ไม่มี | มี → ไปภายนอก |
 | Child Process | ไม่มี | สร้าง cmd/powershell |
 | Registry Change | ไม่มี | แก้ไข Registry |
-| Digital Signature | มี Signer ที่รู้จัก | ไม่มี Signature |
+| Digital Signature | มี Signer ที่รู้จัก | ไม่มี |
 
-### Step 4 — ตัดสินใจ
+---
 
-| เงื่อนไข | วินิจฉัย | ดำเนินการ |
-|:--------|:---------|:---------|
-| ไม่มีอะไรผิดปกติ + มี Signer | ✅ **False Positive** | Step 5A |
-| มี Network/Child/Registry | 🔴 **True Positive** | Step 5B |
-| VirusTotal > 10 | 🔴 **Malicious** | Step 5B |
+### Step 4 — ตัดสิน
 
-### Step 5A — กรณี False Positive
+| เงื่อนไข | วินิจฉัย | ทำอะไร |
+|:---------|:--------|:------|
+| ไม่มีอะไรผิดปกติ + มี Signer | **FP** | สร้าง Exclusion (Hash) + ปิด Ticket |
+| มี Network/Child/Registry | **TP** | ยกระดับ + Containment |
+| VT > 10 | **Malicious** | ยกระดับ + Containment |
 
-1. Analyst Verdict → **False Positive**
-2. สร้าง **Exclusion** ด้วย **SHA256 Hash + File Path**
+---
 
-> [!WARNING]
-> อย่า Exclude ด้วย Filename อย่างเดียว — ต้องใช้ Hash ด้วยเสมอ!
+### Step 5A — ถ้าเป็น FP
 
+1. Verdict → **False Positive**
+2. สร้าง **Exclusion ด้วย Hash + Path** (อย่าใช้ชื่อไฟล์อย่างเดียว)
 3. ปิด Ticket
 
-### Step 5B — กรณี True Positive
+### Step 5B — ถ้าเป็น TP
 
-| ลำดับ | การดำเนินการ |
-|:-----:|:------------|
-| 1️⃣ | **ยกระดับ Severity** เป็น Medium/High |
-| 2️⃣ | **Network Quarantine** |
-| 3️⃣ | **Kill + Quarantine** |
-| 4️⃣ | **Remediate** |
-| 5️⃣ | Scope Analysis |
-| 6️⃣ | Post-Check (15-30 นาที) |
-| 7️⃣ | ปลด Quarantine + ปิด Ticket |
+1. **ยกระดับ Severity** เป็น Medium/High
+2. **Isolate + Kill + Quarantine**
+3. **Remediate**
+4. Scope Analysis → หาเครื่องอื่น
+5. รอ 15-30 นาที → ปลด Quarantine → ปิด Ticket
 
 ---
 
 ## เมื่อไหร่ต้องแจ้งหัวหน้า
 
-| สถานการณ์ | 🎬 ดำเนินการ |
-|:---------|:------------|
-| พบว่าเป็น Zero-day Malware | 🟠 แจ้ง SOC Manager |
-| มี C2 Communication | 🔴 แจ้ง SOC Manager + **IR Team** |
-| พบหลายเครื่อง | 🟠 แจ้ง SOC Manager |
-| ไม่สามารถวินิจฉัยได้ | 🟡 แจ้ง SOC Manager / **Senior Analyst** |
+| สถานการณ์ | แจ้งใคร |
+|:---------|:--------|
+| พบว่าเป็น Zero-day Malware | SOC Manager |
+| มี C2 Communication | SOC Manager + IR Team |
+| พบหลายเครื่อง | SOC Manager |
+| วินิจฉัยไม่ได้ | SOC Manager หรือ Senior Analyst |
 
 ---
 
 ## ป้องกันไม่ให้เจออีก
 
-- ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
-- ✅ **Block Unknown Software** ใน Application Control
-- ✅ ตรวจสอบ Third-party Software ก่อนอนุญาตให้ติดตั้ง
-- ✅ Monitor "General" Alerts สม่ำเสมอ — **อย่าละเลย!**
-- ✅ สร้าง Dashboard ใน SentinelOne สำหรับ "General" category
+- ตั้ง SentinelOne เป็น **Protect** mode
+- **Block Unknown Software** ด้วย Application Control
+- ตรวจสอบ Third-party Software ก่อนอนุญาตให้ติดตั้ง
+- Monitor "General" Alerts สม่ำเสมอ — อย่ามองข้ามเพราะ Severity ต่ำ
 
 ---
 
