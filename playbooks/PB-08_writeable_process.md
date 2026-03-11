@@ -135,6 +135,7 @@ flowchart TD
 - ✅ Enable **Memory Protection** Features
 - ✅ จำกัดการใช้ PowerShell (Constrained Language Mode)
 - ✅ Block ซอฟต์แวร์ Crack / Game Cheat
+- ✅ Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
 
 ---
 

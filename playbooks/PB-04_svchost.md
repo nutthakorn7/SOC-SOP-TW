@@ -132,6 +132,7 @@ flowchart TD
 - ✅ จำกัด Admin Privileges (Least Privilege)
 - ✅ Monitor `svchost.exe` นอก System32
 - ✅ ติดตั้ง Windows Security Updates สม่ำเสมอ
+- ✅ Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
 
 ---
 

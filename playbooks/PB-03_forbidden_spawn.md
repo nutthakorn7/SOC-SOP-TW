@@ -98,9 +98,10 @@ flowchart TD
 | `msedge.exe` | เยี่ยมชมเว็บไซต์อันตราย |
 
 > [!IMPORTANT]
-> **ถ้ามาจาก Email** → ติดต่อ Email Team เพื่อ:
-> 1. หา Email ต้นทาง → Block Sender
-> 2. ลบ Email จากทุก Mailbox ที่ได้รับ
+> **ถ้ามาจาก Email** → ดำเนินการใน **Symantec Email Security**:
+> 1. ค้นหา Email ต้นทาง → ดู Sender, Subject, Recipients
+> 2. **Block Sender** ใน Symantec → Email Security → Policies → Block Lists
+> 3. **ลบ Email** จากทุก Mailbox ที่ได้รับ → Message Trace → Delete
 
 ---
 
@@ -124,14 +125,35 @@ flowchart TD
 
 ### 🔹 Step 6-7 — Containment + Remediation
 
-| ลำดับ | การดำเนินการ |
-|:-----:|:------------|
-| 1️⃣ | **Network Quarantine** เครื่อง |
-| 2️⃣ | **Kill** ทั้ง Parent + Child Process |
-| 3️⃣ | **Quarantine** ไฟล์เอกสาร + ไฟล์ที่ Download |
-| 4️⃣ | **Remediate** ผ่าน SentinelOne |
-| 5️⃣ | ตรวจสอบ + ลบ **Persistence** (Scheduled Task, Registry, Startup) |
-| 6️⃣ | เปลี่ยนรหัสผ่านผู้ใช้ (ถ้า Credential อาจถูกขโมย) |
+| ลำดับ | การดำเนินการ | เครื่องมือ |
+|:-----:|:------------|:---------|
+| 1️⃣ | **Network Quarantine** เครื่อง | SentinelOne |
+| 2️⃣ | **Kill** ทั้ง Parent + Child Process | SentinelOne |
+| 3️⃣ | **Quarantine** ไฟล์เอกสาร + ไฟล์ที่ Download | SentinelOne |
+| 4️⃣ | **Remediate** | SentinelOne |
+| 5️⃣ | **Block Sender** + ลบ Email จากทุก Mailbox | 📧 **Symantec** |
+| 6️⃣ | **Block C2 IP/Domain** ที่ Firewall | 🔥 **Fortigate / Palo Alto** |
+| 7️⃣ | ตรวจ + ลบ **Persistence** | SentinelOne Remote Shell |
+| 8️⃣ | เปลี่ยนรหัสผ่านผู้ใช้ (ถ้า Credential อาจถูกขโมย) | AD / IT Team |
+
+#### 🔥 Block C2 ที่ Firewall
+
+**Fortigate:**
+```
+config firewall address
+    edit "Block_Phishing_C2_<IP>"
+        set subnet <C2_IP> 255.255.255.255
+        set comment "SOC - Phishing C2 - Incident #<ticket>"
+    next
+end
+```
+
+**Palo Alto:**
+```
+set address Block_Phishing_C2 ip-netmask <C2_IP>/32
+set rulebase security rules Block_Phishing_C2 from any to any destination Block_Phishing_C2 action deny log-end yes
+commit
+```
 
 ---
 
@@ -149,7 +171,7 @@ SrcProcParentName In Contains ("winword","excel","outlook") AND TgtProcName In C
 |:---------|:------------|
 | มี C2 Communication ยืนยัน | 🔴 แจ้ง SOC Manager + **IR Team** |
 | มีการ Download มัลแวร์เพิ่ม | 🟠 แจ้ง SOC Manager |
-| Phishing Campaign พบหลายเครื่อง | 🔴 แจ้ง SOC Manager + **Email Team** |
+| Phishing Campaign พบหลายเครื่อง | 🔴 แจ้ง SOC Manager + **Symantec Email Team** |
 | ข้อมูลสำคัญอาจถูกขโมย | 🔴 แจ้ง SOC Manager + **Management** |
 
 ---
@@ -158,9 +180,10 @@ SrcProcParentName In Contains ("winword","excel","outlook") AND TgtProcName In C
 
 - ✅ **Disable VBA Macro** ใน Office ผ่าน Group Policy
 - ✅ ตั้ง **ASR Rules**: Block Office apps from creating child processes
+- ✅ ตั้ง **Symantec Email Security** กรอง `.doc`, `.docm`, `.xlsm` ที่มี Macro
 - ✅ **อบรมผู้ใช้** เรื่อง Phishing Awareness
-- ✅ ใช้ **Email Security Gateway** กรอง Malicious Attachments
 - ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
+- ✅ Block known Phishing domains ที่ **Fortigate / Palo Alto URL Filtering**
 
 ---
 

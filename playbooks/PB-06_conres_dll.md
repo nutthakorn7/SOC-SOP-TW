@@ -119,6 +119,8 @@ flowchart TD
 - ✅ Enable **DLL Load Monitoring** ใน Deep Visibility
 - ✅ จำกัด `rundll32.exe` / `regsvr32.exe` ด้วย Application Control
 - ✅ Monitor DLL ในโฟลเดอร์ `Temp`, `AppData`, `ProgramData`
+- ✅ Block C2 IP/Domain ที่ **Fortigate** และ **Palo Alto**
+- ✅ ตั้ง **Symantec Email Security** กรอง DLL ใน Email Attachment
 
 ---
 

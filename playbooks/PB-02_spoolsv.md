@@ -176,6 +176,7 @@ FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 - ✅ **Disable Print Spooler** บนเครื่องที่ไม่ต้องใช้พิมพ์ (เช่น Server)
 - ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
 - ✅ Monitor ด้วย Deep Visibility Query หา `spoolsv.exe` นอก System32
+- ✅ Block C2 IP ที่ **Fortigate** และ **Palo Alto**
 
 ---
 

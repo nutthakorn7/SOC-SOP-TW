@@ -152,11 +152,45 @@ flowchart TD
 
 ### 🔹 Step 6 — Containment (กักกัน)
 
-| ลำดับ | การดำเนินการ | วิธีทำใน SentinelOne |
-|:-----:|:------------|:--------------------|
-| 1️⃣ | **Isolate เครื่อง** | Sentinels → เลือกเครื่อง → Actions → **"Disconnect from Network"** |
-| 2️⃣ | **Kill Process** | Threat Details → Actions → **"Kill"** |
-| 3️⃣ | **Quarantine ไฟล์** | Threat Details → Actions → **"Quarantine"** |
+| ลำดับ | การดำเนินการ | วิธีทำ |
+|:-----:|:------------|:------|
+| 1️⃣ | **Isolate เครื่อง** | SentinelOne → Actions → "Disconnect from Network" |
+| 2️⃣ | **Kill Process** | SentinelOne → Actions → "Kill" |
+| 3️⃣ | **Quarantine ไฟล์** | SentinelOne → Actions → "Quarantine" |
+| 4️⃣ | **Block C2 IP ที่ Firewall** | ดู Step 6.1 ด้านล่าง |
+
+#### 🔥 Step 6.1 — Block IOC ที่ Firewall
+
+> [!IMPORTANT]
+> ถ้าพบ C2 IP/Domain จาก Storyline หรือ VirusTotal → **Block ที่ Firewall ทันที**
+
+**Fortigate:**
+```
+config firewall address
+    edit "Block_C2_<IP>"
+        set subnet <C2_IP> 255.255.255.255
+        set comment "SOC Block - Incident #<ticket>"
+    next
+end
+config firewall policy
+    edit 0
+        set name "Block_C2_<IP>"
+        set srcintf "any"
+        set dstintf "any"
+        set dstaddr "Block_C2_<IP>"
+        set action deny
+        set schedule "always"
+        set logtraffic all
+    next
+end
+```
+
+**Palo Alto:**
+```
+set address Block_C2_<IP> ip-netmask <C2_IP>/32 description "SOC Block - Incident #<ticket>"
+set rulebase security rules Block_C2 from any to any destination Block_C2_<IP> action deny log-end yes
+commit
+```
 
 > [!NOTE]
 > เครื่องที่ถูก Network Quarantine จะยังติดต่อ SentinelOne Console ได้ แต่จะตัดจาก Network ภายใน
@@ -199,7 +233,7 @@ flowchart TD
 - ✍️ สาเหตุของ Alert
 - ✍️ การดำเนินการที่ทำ
 - ✍️ ผลลัพธ์สุดท้าย
-- ✍️ คำแนะนำป้องกัน (เช่น Block Hash ที่ Firewall)
+- ✍️ IOC ที่ Block ที่ Firewall (IP/Domain/Hash)
 
 ---
 
@@ -218,8 +252,9 @@ flowchart TD
 
 ## 🛡️ แนวทางป้องกัน
 
-- ✅ ตั้ง SentinelOne Policy เป็น **"Protect"** mode (ไม่ใช่ Detect-only)
-- ✅ Block hash ของ `dllhostex.exe` ที่ Firewall / Proxy
+- ✅ ตั้ง SentinelOne Policy เป็น **"Protect"** mode
+- ✅ Block hash ของ `dllhostex.exe` ที่ **Fortigate** และ **Palo Alto**
+- ✅ ตั้ง **Symantec Email Security** กรองไฟล์แนบ `.exe` ต้องสงสัย
 - ✅ ตรวจสอบว่าเครื่องไม่มี Remote Access Tools ที่ไม่ได้รับอนุญาต
 - ✅ แจ้งเตือนผู้ใช้ไม่ให้ดาวน์โหลดไฟล์จากแหล่งที่ไม่น่าเชื่อถือ
 

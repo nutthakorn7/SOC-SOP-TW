@@ -140,8 +140,9 @@ CmdLine Contains "Add-MpPreference -ExclusionPath"
 - ✅ **Enable Tamper Protection** ใน Windows Defender
 - ✅ **Disable** สิทธิ์ผู้ใช้เปลี่ยน Defender Settings (Group Policy)
 - ✅ จำกัด `Add-MpPreference` ผ่าน PowerShell Constrained Language Mode
-- ✅ Block `.cmd`, `.bat` จาก Email Attachments
+- ✅ ตั้ง **Symantec Email Security** Block `.cmd`, `.bat` จาก Email Attachments
 - ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
+- ✅ Block C2 IP ที่ **Fortigate** และ **Palo Alto**
 
 ---
 

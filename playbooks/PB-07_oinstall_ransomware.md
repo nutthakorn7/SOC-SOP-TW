@@ -126,6 +126,7 @@ FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contain
 - ✅ ติดตั้ง **Microsoft Office License** ที่ถูกต้องให้ทุกเครื่อง
 - ✅ ตั้ง **Application Control** Block `OInstall`, `KMSPico`, `KMSAuto`
 - ✅ **Enable VSS** ใน SentinelOne Agent เพื่อให้ Rollback ได้
+- ✅ Block Download URL ของ Cracked SW ที่ **Fortigate / Palo Alto URL Filtering**
 - ✅ อบรมผู้ใช้เรื่อง **ความเสี่ยงของ Pirated Software**
 
 ---

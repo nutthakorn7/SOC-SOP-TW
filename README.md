@@ -2,10 +2,23 @@
 <h3 align="center">Standard Operating Procedures for SentinelOne EDR/XDR Alerts</h3>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/EDR-SentinelOne-6C2DC7?style=for-the-badge&logo=data:image/png;base64," />
+  <img src="https://img.shields.io/badge/EDR-SentinelOne_XDR-6C2DC7?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Email-Symantec-FDB511?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Firewall-Fortigate-EE3124?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Firewall-PaloAlto-FA582D?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Playbooks-10-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Language-Thai-green?style=for-the-badge" />
 </p>
+
+---
+
+## 🏗️ TW Site — Tool Stack
+
+| หมวด | เครื่องมือ | การใช้งานหลัก |
+|:-----|:---------|:------------|
+| 🖥️ **EDR / XDR** | SentinelOne XDR | ตรวจจับ + Response ที่ Endpoint, Deep Visibility, Remote Shell |
+| 📧 **Email Security** | Symantec Email Security | กรอง Phishing, Block Sender, ลบ Email จาก Mailbox |
+| 🔥 **Firewall** | Fortigate | Block C2 IP/Domain, Network Segmentation |
+| 🔥 **Firewall** | Palo Alto Networks | Block C2 IP/Domain, Threat Prevention, URL Filtering |
 
 ---
 
