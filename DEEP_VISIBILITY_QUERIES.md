@@ -1,5 +1,5 @@
 <h1 align="center">🔍 Deep Visibility Query Cheatsheet</h1>
-<h4 align="center">รวม Query สำเร็จรูปสำหรับ SentinelOne Deep Visibility — Copy-Paste ได้เลย!</h4>
+<h4 align="center">รวม Query สำเร็จรูป Copy-Paste ได้เลย — แก้แค่ค่าใน &lt; &gt;</h4>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Tool-Deep_Visibility-6C2DC7?style=for-the-badge" />
@@ -8,80 +8,77 @@
 
 ---
 
-## 📌 วิธีใช้
+## วิธีใช้
 
-1. เข้า **SentinelOne Console** → **Visibility** → **Deep Visibility**
-2. Copy Query จากเอกสารนี้ → Paste ลงใน Search Bar
-3. แก้ไขค่าใน `< >` ให้ตรงกับ Case (เช่น `<Hash>` → ใส่ Hash จริง)
-4. กด **Search**
+1. เข้า SentinelOne → **Visibility** → **Deep Visibility**
+2. Copy Query จากเอกสารนี้ → Paste ลง Search Bar
+3. แก้ค่าใน `< >` ให้ตรงกับ Case เช่น `<hash>` → ใส่ Hash จริง
+4. กด Search
 
-> [!NOTE]
-> Deep Visibility เก็บข้อมูลย้อนหลังประมาณ **14 วัน** (ขึ้นอยู่กับ License)
+Deep Visibility เก็บข้อมูลย้อนหลังประมาณ **14 วัน** (ขึ้นกับ License)
 
 ---
 
-## 1️⃣ ค้นหาด้วย File Name / Hash
+## ค้นหาด้วย File Name / Hash
 
-### ค้นหาไฟล์ตามชื่อ
 ```
 FileName = "<filename>"
 ```
 
-### ค้นหาไฟล์ด้วย SHA256 Hash
 ```
 FileSHA256 = "<hash>"
 ```
 
-### ค้นหาไฟล์ในหลายชื่อพร้อมกัน
+ค้นหาหลายชื่อพร้อมกัน:
 ```
 FileName In Contains ("<name1>","<name2>","<name3>")
 ```
 
 ---
 
-## 2️⃣ Query เฉพาะแต่ละ Alert
+## Query ตาม Playbook
 
-### 🔴 PB-01: dllhostex.exe
+### PB-01: dllhostex.exe
 ```
 FileName = "dllhostex.exe"
 ```
 
-### 🔴 PB-02: spoolsv.exe ปลอม (นอก System32)
+### PB-02: spoolsv.exe ปลอม
 ```
 FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 ```
 
-### 🔴 PB-03: Forbidden Spawn (Office → cmd/powershell)
+### PB-03: Office สร้าง Process ต้องสงสัย
 ```
 SrcProcParentName In Contains ("winword","excel","outlook","powerpnt") AND TgtProcName In Contains ("cmd","powershell","mshta","wscript","cscript")
 ```
 
-### 🔴 PB-04: svchost.exe ปลอม
+### PB-04: svchost.exe ปลอม
 ```
 FileName = "svchost.exe" AND NOT FilePath = "C:\Windows\System32\svchost.exe"
 ```
 
-### 🟡 PB-05: Rufus
+### PB-05: Rufus
 ```
 FileName Contains "rufus"
 ```
 
-### 🔴 PB-06: conres.dll
+### PB-06: conres.dll
 ```
 FileName = "conres.dll"
 ```
 
-### 🔴 PB-07: OInstall + Pirated SW
+### PB-07: Pirated Software
 ```
 FileName In Contains ("OInstall","KMSPico","KMSAuto","office-activator","C2R")
 ```
 
-### 🔴 PB-08: Writeable Process (ค้นหาด้วย Hash)
+### PB-08: Writeable Process (ค้นหาด้วย Hash)
 ```
 FileSHA256 = "<hash>"
 ```
 
-### 🔴 PB-09: Defender Exclusion Tampering
+### PB-09: Defender Exclusion Tampering
 ```
 CmdLine Contains "Add-MpPreference -ExclusionPath"
 ```
@@ -89,161 +86,158 @@ CmdLine Contains "Add-MpPreference -ExclusionPath"
 CmdLine Contains "Set-MpPreference -DisableRealtimeMonitoring"
 ```
 
-### 🟢 PB-10: bwswfcfg.exe
+### PB-10: bwswfcfg.exe
 ```
 FileName = "bwswfcfg.exe"
 ```
 
 ---
 
-## 3️⃣ ค้นหา Process ที่น่าสงสัย
+## Process ที่น่าสงสัย
 
-### Process ที่รันจาก Path ผิดปกติ
+System Process รันจาก Path ผิดปกติ:
 ```
 SrcProcName In ("svchost.exe","spoolsv.exe","csrss.exe","lsass.exe") AND NOT SrcProcImagePath Contains "System32"
 ```
 
-### PowerShell Encoded Command
+PowerShell Encoded Command (มักเป็นมัลแวร์ซ่อนคำสั่ง):
 ```
 TgtProcName = "powershell.exe" AND TgtProcCmdLine Contains "-enc"
 ```
 
-### PowerShell ดาวน์โหลดไฟล์
+PowerShell ดาวน์โหลดไฟล์:
 ```
 TgtProcName = "powershell.exe" AND TgtProcCmdLine In Contains ("Invoke-WebRequest","wget","curl","DownloadFile","DownloadString","IEX")
 ```
 
-### certutil ดาวน์โหลดไฟล์
+certutil ดาวน์โหลดไฟล์ (Living off the Land):
 ```
 TgtProcName = "certutil.exe" AND TgtProcCmdLine Contains "urlcache"
 ```
 
-### mshta เรียก URL
+mshta เรียก URL:
 ```
 TgtProcName = "mshta.exe" AND TgtProcCmdLine Contains "http"
 ```
 
-### rundll32 รัน DLL จาก Path ผิดปกติ
+rundll32 รัน DLL จาก Path ผิดปกติ:
 ```
 TgtProcName = "rundll32.exe" AND TgtProcCmdLine In Contains ("Temp","AppData","ProgramData","Users")
 ```
 
-### regsvr32 Silent Registration
+regsvr32 Silent Registration:
 ```
 TgtProcName = "regsvr32.exe" AND TgtProcCmdLine Contains "/s"
 ```
 
 ---
 
-## 4️⃣ ค้นหา Network Activity
+## Network Activity
 
-### Process ที่ติดต่อ IP ภายนอก
+Process ติดต่อ IP ภายนอก:
 ```
 NetConnStatus = "SUCCESS" AND SrcProcName = "<process_name>"
 ```
 
-### ค้นหา Connection ไปยัง IP ที่ระบุ
+Connection ไปยัง IP ที่ระบุ:
 ```
 NetDestinationIp = "<ip_address>"
 ```
 
-### ค้นหา Connection ไปยัง Domain
+Connection ไปยัง Domain:
 ```
 DNS Contains "<domain>"
 ```
 
-### ค้นหา Port ที่น่าสงสัย
+Port ที่น่าสงสัย (Reverse Shell, Backdoor):
 ```
 NetDestinationPort In (4444,5555,8080,8443,1234,9999)
 ```
 
 ---
 
-## 5️⃣ ค้นหา File Operations
+## File Operations
 
-### ไฟล์ที่ถูกสร้างใน Path ที่น่าสงสัย
+ไฟล์ที่ถูกสร้างใน Path ต้องสงสัย:
 ```
 EventType = "File Creation" AND FilePath In Contains ("Temp","AppData\\Local","ProgramData")
 ```
 
-### ไฟล์ .exe ที่ถูกสร้างใหม่
+ไฟล์ .exe ใหม่:
 ```
 EventType = "File Creation" AND FilePath Contains ".exe"
 ```
 
-### ไฟล์ที่ถูกสร้างใน Excluded Path (PB-09)
+ไฟล์ใน Excluded Path (สำหรับ PB-09):
 ```
 FilePath Contains "<excluded_path>" AND EventType = "File Creation"
 ```
 
-### สัญญาณ Ransomware — ไฟล์ที่ถูกแก้ไขจำนวนมาก
+สัญญาณ Ransomware — ไฟล์ถูกแก้ไขจำนวนมาก:
 ```
 EventType = "File Modification" AND SrcProcName = "<process_name>" | count by FilePath
 ```
 
 ---
 
-## 6️⃣ ค้นหา Persistence
+## Persistence
 
-### Scheduled Task ถูกสร้าง
+Scheduled Task ถูกสร้าง:
 ```
 EventType = "Task Register" OR (TgtProcName = "schtasks.exe" AND TgtProcCmdLine Contains "/create")
 ```
 
-### Registry Run Key ถูกแก้ไข
+Registry Run Key ถูกแก้ไข:
 ```
 EventType = "Registry Value Modified" AND RegistryPath Contains "CurrentVersion\\Run"
 ```
 
-### Service ถูกสร้างใหม่
+Service ใหม่:
 ```
 EventType = "Service Installed" OR (TgtProcName = "sc.exe" AND TgtProcCmdLine Contains "create")
 ```
 
 ---
 
-## 7️⃣ ค้นหา Credential Access
+## Credential Access
 
-### เข้าถึง LSASS
+เข้าถึง LSASS (Credential Dump):
 ```
 TgtProcName = "lsass.exe" AND EventType = "Open Remote Process Handle"
 ```
 
-### เครื่องมือ Credential Dumping
+เครื่องมือ Credential Dumping:
 ```
 SrcProcName In Contains ("mimikatz","procdump","comsvcs") OR TgtProcCmdLine Contains "sekurlsa"
 ```
 
 ---
 
-## 8️⃣ ค้นหา Lateral Movement
+## Lateral Movement
 
-### PsExec / Remote Execution
+PsExec / Remote Execution:
 ```
 SrcProcName In Contains ("psexec","psexesvc") OR (TgtProcName = "cmd.exe" AND TgtProcCmdLine Contains "\\\\")
 ```
 
-### WMI Remote Execution
+WMI Remote Execution:
 ```
 SrcProcName = "wmiprvse.exe" AND TgtProcName In ("cmd.exe","powershell.exe")
 ```
 
 ---
 
-## 🔧 Tips สำหรับ Deep Visibility
+## Tips
 
 | Tip | คำอธิบาย |
 |:----|:---------|
-| ใช้ `Contains` | ค้นหาบางส่วน — ไม่ต้องพิมพ์ครบ |
-| ใช้ `In Contains (...)` | ค้นหาหลายค่าพร้อมกัน |
-| ใช้ `NOT` | กรอง False Positive ออก |
-| ใช้ `AND` / `OR` | รวมเงื่อนไข |
-| กด **Group By** | ดูเป็น Summary (เช่น Group by Endpoint) |
-| เลือก **Time Range** | เลือกช่วงเวลาให้ตรงกับ Alert |
+| `Contains` | ค้นหาบางส่วนได้ ไม่ต้องพิมพ์ครบ |
+| `In Contains (...)` | ค้นหาหลายค่าพร้อมกัน |
+| `NOT` | กรอง False Positive ออก |
+| `AND` / `OR` | รวมเงื่อนไข |
+| **Group By** | ดูเป็น Summary เช่น Group by Endpoint |
+| **Time Range** | เลือกช่วงเวลาให้ตรงกับ Alert |
 
 ---
 
-<p align="center">
-  <b>SOC Team — TW Site</b><br/>
-  <i>อัปเดตล่าสุด: มีนาคม 2026</i>
-</p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>
