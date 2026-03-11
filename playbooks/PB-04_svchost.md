@@ -31,6 +31,38 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: svchost.exe detected"] --> B["Step 1: เปิด Ticket<br/>จดบันทึก File Path + Parent"]
+    B --> C{"Step 2: File Path?"}
+    C -->|"System32"| D["Step 3: ตรวจ Parent,<br/>CmdLine, Signature"]
+    C -->|"Path อื่น"| E["🔴 ปลอมแน่นอน!<br/>True Positive"]
+    D --> F{"Parent = services.exe?<br/>CmdLine มี -k?"}
+    F -->|"✅ ปกติ"| G["Step 4: ตรวจ Memory Injection<br/>DLL จากนอก System32?"]
+    F -->|"❌ ผิดปกติ"| E
+    G --> H{"พบ Injection?"}
+    H -->|"✅ ใช่"| I["True Positive<br/>Process Injection"]
+    H -->|"❌ ไม่"| J["ตรวจ Hash VirusTotal"]
+    E --> K["Step 5-6: Hash + Scope Analysis"]
+    I --> K
+    J --> K
+    K --> L["Step 7: Containment<br/>Quarantine + Kill"]
+    L --> M{"Process Injection?"}
+    M -->|"✅ ใช่"| N["Step 8: Reboot + ลบ DLL"]
+    M -->|"❌ ไม่"| O["Step 8: Remediate + Rollback"]
+    N --> P["Step 9-10: Post-Check + ปิด Ticket"]
+    O --> P
+
+    style A fill:#ff6b6b,color:#fff
+    style E fill:#ff0000,color:#fff
+    style I fill:#ff922b,color:#fff
+    style P fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket

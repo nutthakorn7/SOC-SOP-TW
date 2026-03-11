@@ -18,6 +18,38 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: dllhostex.exe detected"] --> B["Step 1: เปิด Incident Ticket<br/>จดบันทึก Endpoint, IP, User, Hash"]
+    B --> C["Step 2: ตรวจสอบ Threat Details<br/>Classification, Confidence, Mitigation"]
+    C --> D["Step 3: วิเคราะห์ Attack Storyline<br/>ดู Parent/Child Process"]
+    D --> E["Step 4: ตรวจ Hash ใน VirusTotal"]
+    E --> F{"Detection > 10 engines?"}
+    F -->|"✅ ใช่"| G["ยืนยัน Malicious"]
+    F -->|"❌ ไม่"| H["วิเคราะห์ Behavior เพิ่ม"]
+    H --> G
+    G --> I["Step 5: Scope Analysis<br/>ค้นหาใน Deep Visibility"]
+    I --> J{"พบหลายเครื่อง?"}
+    J -->|"✅ ใช่"| K["🔴 Escalate เป็น Critical<br/>แจ้ง SOC Manager"]
+    J -->|"❌ ไม่"| L["ดำเนินการต่อ"]
+    K --> L
+    L --> M["Step 6: Containment<br/>Network Quarantine + Kill + Quarantine"]
+    M --> N["Step 7: Remediate + Rollback"]
+    N --> O["Step 8: รอ 15-30 นาที<br/>ตรวจสอบ Alert ใหม่"]
+    O --> P{"มี Alert ใหม่?"}
+    P -->|"✅ ใช่"| M
+    P -->|"❌ ไม่"| Q["ปลด Network Quarantine"]
+    Q --> R["Step 9-10: Analyst Verdict<br/>สรุป + ปิด Ticket"]
+
+    style A fill:#ff6b6b,color:#fff
+    style K fill:#ff0000,color:#fff
+    style R fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket

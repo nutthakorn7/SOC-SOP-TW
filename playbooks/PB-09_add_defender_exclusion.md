@@ -16,6 +16,35 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🚨 Alert: Add_Defender_Exclusion.cmd"] --> B["Step 1: IMMEDIATE ACTION<br/>Kill + Quarantine + Isolate"]
+    B --> C["Step 2: วิเคราะห์ Script<br/>ดู Exclusion Path / Extension"]
+    C --> D["Step 3: วิเคราะห์ Storyline<br/>ดูก่อน/หลัง Script รัน"]
+    D --> E{"มี Malware ใน<br/>Excluded Path?"}
+    E -->|"✅ ใช่"| F["🔴 พบ Malware ซ่อน!"]
+    E -->|"❌ ไม่แน่ใจ"| G["Step 5: Full Scan<br/>ค้นหาใน Excluded Path"]
+    F --> H["Step 4: ตรวจ Defender Exclusions<br/>Remote Shell"]
+    G --> H
+    H --> I["Step 6: ลบ Exclusions<br/>+ Enable Real-time Protection"]
+    I --> J["Remediate + ลบ Persistence"]
+    J --> K["Step 7: Scope Analysis<br/>ค้นหา Add-MpPreference"]
+    K --> L{"พบหลายเครื่อง?"}
+    L -->|"✅ ใช่"| M["🔴 Isolate ทุกเครื่อง"]
+    L -->|"❌ ไม่"| N["Step 8: Post-Check<br/>ยืนยัน Defender กลับมา"]
+    M --> N
+    N --> O["ปิด Ticket — True Positive"]
+
+    style A fill:#ff0000,color:#fff
+    style F fill:#ff0000,color:#fff
+    style M fill:#ff0000,color:#fff
+    style O fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: 🚨 ดำเนินการทันที

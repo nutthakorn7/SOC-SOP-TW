@@ -26,6 +26,38 @@ Alert นี้มักเกี่ยวข้องกับ:
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: Forbidden Spawn Execution"] --> B["Step 1: เปิด Ticket<br/>จดบันทึก Parent + Child Process"]
+    B --> C["Step 2: วิเคราะห์ Attack Storyline<br/>ดู Command Line Arguments"]
+    C --> D["Step 3: ระบุแหล่งที่มา"]
+    D --> E{"Parent Process คือ?"}
+    E -->|"Office App"| F["หาไฟล์เอกสารต้นทาง<br/>ตรวจสอบ Email"]
+    E -->|"Browser"| G["ตรวจสอบ URL ที่เข้าชม"]
+    E -->|"Known Software"| H["อาจเป็น FP"]
+    F --> I["Step 4: ตรวจ TI<br/>Hash + URL ใน VirusTotal"]
+    G --> I
+    H --> I
+    I --> J{"True Positive?"}
+    J -->|"✅ TP"| K["Step 6: Containment<br/>Quarantine + Kill Chain"]
+    J -->|"❌ FP"| L["Step 9: สร้าง Exclusion<br/>ปิด Ticket"]
+    K --> M["Step 7: Remediate<br/>ลบ Persistence + Download"]
+    M --> N["Step 8: ตรวจสอบการแพร่กระจาย<br/>ดู Email Recipients"]
+    N --> O{"พบหลายเครื่อง?"}
+    O -->|"✅ ใช่"| P["🔴 Escalate<br/>แจ้ง SOC Manager + Email Team"]
+    O -->|"❌ ไม่"| Q["Post-Check + ปิด Ticket"]
+    P --> Q
+
+    style A fill:#ff6b6b,color:#fff
+    style P fill:#ff0000,color:#fff
+    style L fill:#51cf66,color:#fff
+    style Q fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket

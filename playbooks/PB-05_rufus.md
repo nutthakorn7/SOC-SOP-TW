@@ -23,6 +23,34 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: rufus-3.13.exe detected"] --> B["Step 1: เปิด Ticket<br/>จดบันทึก Hash + Path"]
+    B --> C["Step 2: เทียบ Hash กับ<br/>Rufus Official + VirusTotal"]
+    C --> D{"Hash ตรงกับ Official?"}
+    D -->|"✅ ตรง"| E{"ได้รับอนุญาต<br/>จากองค์กร?"}
+    D -->|"❌ ไม่ตรง"| F["Step 4: ตรวจ Storyline<br/>มี Network / Child Process?"]
+    E -->|"✅ ใช่"| G["Step 6A: False Positive<br/>สร้าง Exclusion"]
+    E -->|"❌ ไม่"| H["Step 6C: Policy Violation<br/>Quarantine + แจ้ง Manager"]
+    F --> I{"มีพฤติกรรมผิดปกติ?"}
+    I -->|"✅ ใช่"| J["🔴 True Positive<br/>Trojanized Rufus"]
+    I -->|"❌ ไม่"| G
+    J --> K["Step 6B: Containment<br/>Kill + Quarantine + Remediate"]
+    K --> L["Scope Analysis + ปิด Ticket"]
+    G --> M["ปิด Ticket"]
+    H --> M
+
+    style A fill:#ff6b6b,color:#fff
+    style J fill:#ff0000,color:#fff
+    style H fill:#ff922b,color:#fff
+    style G fill:#51cf66,color:#fff
+    style M fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket

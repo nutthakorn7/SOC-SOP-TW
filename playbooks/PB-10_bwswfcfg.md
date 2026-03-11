@@ -25,6 +25,36 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: bwswfcfg.exe General"] --> B["Step 1: เปิด Ticket<br/>จดบันทึก Hash + Signature"]
+    B --> C["Step 2: ตรวจ Hash VirusTotal"]
+    C --> D{"ผลลัพธ์ VirusTotal?"}
+    D -->|"0 detections + Signed"| E["FP สูง"]
+    D -->|"1-5 detections"| F["น่าสงสัย<br/>ตรวจเพิ่ม"]
+    D -->|"> 10 detections"| G["🔴 Malicious!"]
+    D -->|"Not Found"| F
+    E --> H["Step 3: ตรวจ Storyline<br/>เพื่อยืนยัน"]
+    F --> H
+    G --> I["ยกระดับ Severity"]
+    H --> J{"มี Network / Child Process<br/>/ Registry Change?"}
+    J -->|"✅ ใช่"| I
+    J -->|"❌ ไม่"| K["Step 5A: False Positive<br/>สร้าง Exclusion"]
+    I --> L["Step 5B: True Positive<br/>Quarantine + Remediate"]
+    L --> M["Scope Analysis + Post-Check"]
+    M --> N["ปิด Ticket"]
+    K --> N
+
+    style A fill:#ffd43b,color:#000
+    style G fill:#ff0000,color:#fff
+    style K fill:#51cf66,color:#fff
+    style N fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket

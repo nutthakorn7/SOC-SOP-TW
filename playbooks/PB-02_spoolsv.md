@@ -21,6 +21,38 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: spoolsv.exe detected"] --> B["Step 1: เปิด Incident Ticket<br/>จดบันทึก File Path + Hash"]
+    B --> C{"Step 2: ตรวจสอบ File Path"}
+    C -->|"Path = System32"| D["Step 3: ตรวจ Signature,<br/>Parent Process, DLL Loads"]
+    C -->|"Path ≠ System32"| E["🔴 True Positive<br/>มัลแวร์ปลอมชื่อ"]
+    D --> F{"Signature = Microsoft?<br/>Parent = services.exe?"}
+    F -->|"✅ ปกติ"| G{"มี DLL นอก System32?"}
+    F -->|"❌ ผิดปกติ"| E
+    G -->|"✅ ใช่"| H["⚠️ สงสัย PrintNightmare"]
+    G -->|"❌ ไม่"| I["อาจเป็น False Positive"]
+    H --> J["Step 4: ตรวจ Hash VirusTotal"]
+    E --> J
+    I --> J
+    J --> K["Step 5-6: Storyline + Scope Analysis"]
+    K --> L["Step 7: Containment<br/>Quarantine + Kill"]
+    L --> M{"PrintNightmare?"}
+    M -->|"✅ ใช่"| N["Step 8: Patch + Disable Spooler"]
+    M -->|"❌ ไม่"| O["Step 8: Remediate + Rollback"]
+    N --> P["Step 9-10: Post-Check + ปิด Ticket"]
+    O --> P
+
+    style A fill:#ff6b6b,color:#fff
+    style E fill:#ff0000,color:#fff
+    style H fill:#ff922b,color:#fff
+    style P fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket

@@ -24,6 +24,37 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: Writeable Process Creation"] --> B["Step 1: เปิด Ticket<br/>จดบันทึก Process + Parent"]
+    B --> C["Step 2: ตรวจ Process ที่ถูก Detect"]
+    C --> D{"Process Type?"}
+    D -->|"System Process ถูก Hollow"| E["🔴 Process Hollowing"]
+    D -->|"Unknown EXE"| F["🔴 สงสัย Malware"]
+    D -->|"Dev Tool / Security SW"| G["อาจเป็น FP"]
+    D -->|"Game Cheat / Crack"| H["🟠 PUP / Malware"]
+    E --> I["Step 3: วิเคราะห์ Storyline<br/>Suspended→Write→Resume?"]
+    F --> I
+    G --> J["Step 4: ตรวจ Hash VirusTotal"]
+    H --> I
+    I --> J
+    J --> K{"True Positive?"}
+    K -->|"✅ TP"| L["Step 6: Containment<br/>Kill + Quarantine"]
+    K -->|"❌ FP"| M["สร้าง Exclusion + ปิด Ticket"]
+    L --> N["Step 7: Remediate + Reboot<br/>เคลียร์ Memory"]
+    N --> O["Step 8-9: Scope + Post-Check"]
+    O --> P["ปิด Ticket"]
+
+    style A fill:#ff6b6b,color:#fff
+    style E fill:#ff0000,color:#fff
+    style M fill:#51cf66,color:#fff
+    style P fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket

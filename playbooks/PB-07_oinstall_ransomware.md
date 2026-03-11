@@ -23,6 +23,35 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🚨 Alert: OInstall_x64.exe<br/>Ransomware!"] --> B["Step 1: IMMEDIATE ACTION<br/>Kill + Quarantine + Isolate"]
+    B --> C["Step 2: ตรวจสอบการเข้ารหัสไฟล์"]
+    C --> D{"มีไฟล์ถูกเข้ารหัส?"}
+    D -->|"✅ มี!"| E["🔴🔴 CRITICAL<br/>Escalate + Rollback ทันที"]
+    D -->|"❌ ไม่มี"| F["SentinelOne หยุดทัน<br/>หรือเป็น Cracked Software"]
+    E --> G["Step 6: Rollback ด้วย VSS"]
+    F --> H["Step 3: ตรวจ Hash VirusTotal"]
+    H --> I{"Classification?"}
+    I -->|"Ransomware"| E
+    I -->|"HackTool / PUP"| J["Cracked Software<br/>ยังต้องลบ!"]
+    G --> K["Step 5: Scope Analysis<br/>ค้นหา OInstall + KMS ทุกเครื่อง"]
+    J --> K
+    K --> L{"พบหลายเครื่อง?"}
+    L -->|"✅ ใช่"| M["Isolate ทุกเครื่อง"]
+    L -->|"❌ ไม่"| N["Step 7-8: Remediate<br/>ติดตั้ง Office License จริง"]
+    M --> N
+    N --> O["ปิด Ticket + แจ้ง IT Manager"]
+
+    style A fill:#ff0000,color:#fff
+    style E fill:#ff0000,color:#fff
+    style O fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: 🚨 ดำเนินการเร่งด่วน (IMMEDIATE ACTIONS)

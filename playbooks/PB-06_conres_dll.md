@@ -23,6 +23,36 @@
 
 ---
 
+## 📊 Flowchart การตอบสนอง
+
+```mermaid
+flowchart TD
+    A["🔔 Alert: conres.dll detected"] --> B["Step 1: เปิด Ticket<br/>จดบันทึก Hash + Process ที่โหลด"]
+    B --> C["Step 2: ตรวจ Process ที่โหลด DLL"]
+    C --> D{"โหลดโดย Process อะไร?"}
+    D -->|"rundll32 / regsvr32"| E["🔴 น่าสงสัยมาก"]
+    D -->|"svchost.exe"| F["🔴 Service Hijacking"]
+    D -->|"Known Application"| G["ตรวจสอบเพิ่มเติม"]
+    E --> H["Step 3-4: ตรวจ Path + Hash<br/>VirusTotal"]
+    F --> H
+    G --> H
+    H --> I["Step 5: วิเคราะห์ Storyline<br/>ดูก่อน/หลัง DLL โหลด"]
+    I --> J{"มี C2 / Credential Dump?"}
+    J -->|"✅ ใช่"| K["🔴 Escalate ทันที"]
+    J -->|"❌ ไม่"| L["Step 6: Scope Analysis"]
+    K --> L
+    L --> M["Step 7-8: Containment + Remediate<br/>ลบ DLL + Persistence"]
+    M --> N["Step 9-10: Post-Check + ปิด Ticket"]
+
+    style A fill:#ff6b6b,color:#fff
+    style E fill:#ff0000,color:#fff
+    style F fill:#ff0000,color:#fff
+    style K fill:#ff0000,color:#fff
+    style N fill:#51cf66,color:#fff
+```
+
+---
+
 ## 2. ขั้นตอนการตอบสนอง (Response Steps)
 
 ### Step 1: รับ Alert และเปิด Incident Ticket
