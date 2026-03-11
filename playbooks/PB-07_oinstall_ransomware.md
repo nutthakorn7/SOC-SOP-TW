@@ -13,17 +13,17 @@
 | รายการ | รายละเอียด |
 |:------:|:-----------|
 | **Alert** | `OInstall_x64.exe detected as Ransomware` |
-| **ประเภท** | Pirated Office Installer + Ransomware/Cryptominer |
-| **True Positive Rate** | สูงมาก — ไฟล์นี้ต้องถูกลบเสมอ |
-| **SLA** | ≤ **15 นาที** |
+| **ประเภท** | Pirated Office Installer — อาจฝัง Ransomware หรือ Cryptominer |
+| **True Positive Rate** | สูงมาก — ต้องลบทุกกรณี |
+| **SLA** | 15 นาที |
 
 > [!CAUTION]
-> **OInstall_x64.exe** คือ **Office C2R Install** — เครื่องมือโจรสลัดที่ใช้ติดตั้ง Office โดยไม่มี License
-> 
-> 🔴 **ไม่ว่าจะเป็นอะไร → ไฟล์นี้ต้องถูกลบออก** เพราะ:
-> 1. บาง Version ฝัง **Ransomware** หรือ **Cryptominer** จริง
-> 2. มีพฤติกรรมคล้าย Malware (แก้ไข System Files, Disable Security)
-> 3. เป็น **ซอฟต์แวร์ละเมิดลิขสิทธิ์**
+> `OInstall_x64.exe` คือ **Office C2R Install** — เครื่องมือติดตั้ง Office โดยไม่มี License (Pirated)
+>
+> ไม่ว่าจะเป็น Ransomware จริงหรือแค่ Cracked Software → **ต้องลบออกทุกกรณี** เพราะ:
+> 1. บาง Version ฝัง Ransomware หรือ Cryptominer มาด้วย
+> 2. ตัวมันเองแก้ไข System Files และปิด Security Features
+> 3. เป็นซอฟต์แวร์ละเมิดลิขสิทธิ์ — มีความเสี่ยงทางกฎหมาย
 
 ---
 
@@ -31,23 +31,23 @@
 
 ```mermaid
 flowchart TD
-    A["🚨 Alert: OInstall_x64.exe\nRansomware!"] --> B["Step 1: IMMEDIATE ACTION\nKill + Quarantine + Isolate"]
-    B --> C["Step 2: ตรวจสอบการเข้ารหัสไฟล์"]
+    A["Alert: OInstall_x64.exe\nRansomware!"] --> B["IMMEDIATE: Kill + Quarantine\nแล้ว Isolate เครื่อง"]
+    B --> C["ตรวจว่ามีไฟล์ถูกเข้ารหัสไหม"]
     C --> D{"มีไฟล์ถูกเข้ารหัส?"}
-    D -->|"✅ มี!"| E["🔴🔴 CRITICAL\nEscalate + Rollback ทันที"]
-    D -->|"❌ ไม่มี"| F["SentinelOne หยุดทัน\nหรือเป็น Cracked Software"]
-    E --> G["Step 6: Rollback ด้วย VSS"]
-    F --> H["Step 3: ตรวจ Hash VirusTotal"]
+    D -->|"มี!"| E["CRITICAL\nEscalate + Rollback ทันที"]
+    D -->|"ไม่มี"| F["SentinelOne หยุดทัน\nหรือเป็น Cracked SW"]
+    E --> G["Rollback ด้วย VSS"]
+    F --> H["เช็ค Hash ใน VT"]
     H --> I{"Classification?"}
     I -->|"Ransomware"| E
-    I -->|"HackTool / PUP"| J["Cracked Software\nยังต้องลบ!"]
-    G --> K["Step 5: Scope Analysis\nค้นหา OInstall + KMS ทุกเครื่อง"]
+    I -->|"HackTool / PUP"| J["Cracked Software\nยังต้องลบ"]
+    G --> K["Scope Analysis\nหา OInstall + KMS ทุกเครื่อง"]
     J --> K
     K --> L{"พบหลายเครื่อง?"}
-    L -->|"✅ ใช่"| M["Isolate ทุกเครื่อง"]
-    L -->|"❌ ไม่"| N["Step 7-8: Remediate\nติดตั้ง Office License จริง"]
+    L -->|"ใช่"| M["Isolate ทุกเครื่อง"]
+    L -->|"ไม่"| N["Remediate\nติดตั้ง Office License จริง"]
     M --> N
-    N --> O["ปิด Ticket + แจ้ง IT Manager"]
+    N --> O["ปิด Ticket + แจ้ง IT"]
 
     style A fill:#ff0000,color:#fff
     style E fill:#ff0000,color:#fff
@@ -58,76 +58,97 @@ flowchart TD
 
 ## ขั้นตอนการทำงาน
 
-### Step 1 — 🚨 IMMEDIATE ACTIONS (ดำเนินการทันที!)
+### Step 1 — ทำทันที! ห้ามรอ
 
-> [!CAUTION]
-> เนื่องจาก Alert เป็น **Ransomware** → ดำเนินการ **ทันที** ก่อนวิเคราะห์!
+เพราะ Alert นี้เป็น **Ransomware** ให้ทำ 3 อย่างนี้ **ก่อนวิเคราะห์**:
 
-| ลำดับ | ⚡ ดำเนินการทันที | วิธีทำ |
-|:-----:|:-----------------|:------|
-| 1️⃣ | **Kill + Quarantine** | Actions → "Kill" → "Quarantine" |
-| 2️⃣ | **Isolate เครื่อง** | Sentinels → Actions → "Disconnect from Network" |
-| 3️⃣ | **เปิด Ticket** | Severity = **Critical** |
+1. **Kill + Quarantine** → Actions → "Kill" แล้ว "Quarantine"
+2. **Isolate เครื่อง** → Sentinels → "Disconnect from Network"
+3. **เปิด Ticket** → ตั้ง Severity = Critical
 
-### Step 2 — ตรวจสอบการเข้ารหัสไฟล์ ⭐
+ใช้เวลาไม่ถึง 2 นาที แต่ช่วยหยุดความเสียหายได้ทั้งหมด
 
-| สัญญาณ | ⚠️ ความหมาย |
-|:-------|:-----------|
-| File Extension เปลี่ยนเป็น `.encrypted`, `.locked` | 🔴 **Ransomware กำลังทำงาน!** |
-| พบไฟล์ `HOW_TO_DECRYPT.txt` | 🔴 **Ransomware เข้ารหัสแล้ว!** |
-| ไม่มีการเปลี่ยนแปลงไฟล์ | ✅ SentinelOne หยุดทัน / Cracked SW |
+---
 
-### Step 3 — ตรวจ Hash VirusTotal
+### Step 2 — ตรวจว่ามีไฟล์ถูกเข้ารหัสไหม
 
-| Classification | ความหมาย |
-|:-------------|:---------|
-| Ransomware | 🔴 **Critical** — Escalate ทันที |
-| HackTool / PUP | 🟠 Cracked Software — ยังอันตราย ต้องลบ |
+นี่คือจุดตัดสินว่าเป็น Ransomware ที่ทำงานจริงหรือแค่ Cracked Software:
 
-### Step 4-5 — Storyline + Scope Analysis
+| สัญญาณ | ความหมาย |
+|:-------|:---------|
+| File Extension เปลี่ยนเป็น `.encrypted`, `.locked` | **Ransomware กำลังทำงาน!** |
+| พบ `HOW_TO_DECRYPT.txt` หรือ Ransom Note | **Ransomware เข้ารหัสแล้ว!** |
+| ไม่มีการเปลี่ยนแปลงไฟล์ | SentinelOne หยุดทัน หรือเป็นแค่ Cracked SW |
 
-ค้นหา:
+ถ้ามีการเข้ารหัสไฟล์ → **แจ้ง SOC Manager + IR Team ทันที** อย่ารอ
+
+---
+
+### Step 3 — เช็ค Hash ใน VirusTotal
+
+Copy Hash ไปเช็คแล้วดูว่า VT บอกว่าเป็นอะไร:
+
+- **Ransomware** → ยืนยัน Critical → ทำ Rollback ด้วย (Step 6)
+- **HackTool / PUP** → เป็น Cracked Software **แต่ยังต้องลบ** เพราะผิดนโยบาย
+
+---
+
+### Step 4-5 — ดู Storyline + หาเครื่องอื่น
+
+ดู Attack Storyline ว่ามัลแวร์ทำอะไรบ้าง — ปิด Defender? แก้ Registry? สร้าง Scheduled Task?
+
+แล้วค้นหาในทุกเครื่อง:
 ```
 FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contains "KMSAuto"
 ```
 
-### Step 6 — Remediation + Rollback
+เจอหลายเครื่องไม่แปลก — เพราะถ้าคนหนึ่งใช้ อาจแชร์ให้คนอื่นด้วย
 
-| การดำเนินการ | รายละเอียด |
-|:------------|:----------|
-| **Remediate** | Actions → "Remediate" |
-| **Rollback** (ถ้ามีเข้ารหัส) | Actions → "Rollback" (VSS Snapshot) |
-| **ตรวจ Persistence** | ลบ Services, Scheduled Tasks, Registry |
-| **ตรวจ Defender** | ให้แน่ใจว่า Defender ถูก Enable กลับ |
+---
+
+### Step 6 — Remediate + Rollback
+
+| ทำอะไร | รายละเอียด |
+|:------|:---------|
+| **Remediate** | กด Actions → "Remediate" |
+| **Rollback** (ถ้ามีเข้ารหัส) | กด "Rollback" ใช้ VSS Snapshot คืนค่าไฟล์ |
+| **ตรวจ Persistence** | ลบ Services, Scheduled Tasks, Registry ที่มัลแวร์สร้าง |
+| **ตรวจ Defender** | ดูว่า Defender ยังเปิดอยู่ไหม ถ้าถูกปิด → เปิดกลับ |
 | **Office License** | แจ้ง IT ติดตั้ง License ที่ถูกต้อง |
 
-### Step 7-8 — Post-Check + ปิด Incident
+---
+
+### Step 7-8 — ตรวจซ้ำแล้วปิด Ticket
+
+Analyst Verdict ของ Alert นี้ = **True Positive เสมอ** แม้ว่า VT จะบอกว่าเป็นแค่ HackTool
 
 > [!IMPORTANT]
-> Analyst Verdict = **True Positive เสมอ** (แม้เป็น Cracked SW ที่ไม่ใช่ Ransomware จริง)
-> แจ้ง **IT Manager** เพื่อดำเนินการด้าน HR/Policy ถ้าจำเป็น
+> แจ้ง **IT Manager** ด้วย — เพราะการใช้ Pirated Software อาจต้องดำเนินการทาง HR หรือ Policy
+> ไม่ใช่หน้าที่ SOC ตัดสินเรื่องนี้ แต่ต้องแจ้งให้คนที่รับผิดชอบรู้
 
 ---
 
 ## เมื่อไหร่ต้องแจ้งหัวหน้า
 
-| สถานการณ์ | 🎬 ดำเนินการ |
-|:---------|:------------|
-| มีการเข้ารหัสไฟล์ (Ransomware Active) | 🔴🔴 แจ้ง SOC Manager + **IR Team ทันที** |
-| Rollback ไม่สำเร็จ | 🔴 แจ้ง SOC Manager + **IT Backup Team** |
-| ข้อมูลสำคัญถูกเข้ารหัส | 🔴 แจ้ง SOC Manager + **Management** |
-| พบหลายเครื่อง | 🟠 แจ้ง SOC Manager |
+| สถานการณ์ | แจ้งใคร |
+|:---------|:--------|
+| มีการเข้ารหัสไฟล์จริง | SOC Manager + IR Team **ทันที** |
+| Rollback ไม่สำเร็จ | SOC Manager + IT Backup Team |
+| ข้อมูลสำคัญถูกเข้ารหัส | SOC Manager + Management |
+| พบหลายเครื่อง | SOC Manager |
 
 ---
 
 ## ป้องกันไม่ให้เจออีก
 
-- 🚫 **ห้ามใช้ Cracked/Pirated Software** อย่างเด็ดขาด
-- ✅ ติดตั้ง **Microsoft Office License** ที่ถูกต้องให้ทุกเครื่อง
-- ✅ ตั้ง **Application Control** Block `OInstall`, `KMSPico`, `KMSAuto`
-- ✅ **Enable VSS** ใน SentinelOne Agent เพื่อให้ Rollback ได้
-- ✅ Block Download URL ของ Cracked SW ที่ **Fortigate / Palo Alto URL Filtering**
-- ✅ อบรมผู้ใช้เรื่อง **ความเสี่ยงของ Pirated Software**
+ปัญหารากเหง้าคือ **การใช้ซอฟต์แวร์ละเมิดลิขสิทธิ์** ดังนั้น:
+
+- **ห้ามใช้ Cracked Software** ทุกกรณี — ต้องบังคับเป็นนโยบาย
+- ติดตั้ง **Office License ที่ถูกต้อง** ให้ทุกเครื่อง
+- ตั้ง **Application Control** Block ชื่อ `OInstall`, `KMSPico`, `KMSAuto`
+- **Enable VSS** ใน SentinelOne Agent → ถ้าโดน Ransomware จริง Rollback ได้
+- Block URL ดาวน์โหลด Cracked Software ที่ **Fortigate / Palo Alto URL Filtering**
+- สื่อสารกับพนักงานว่า **ซอฟต์แวร์เถื่อนเสี่ยงทั้งมัลแวร์และกฎหมาย**
 
 ---
 
