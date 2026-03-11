@@ -1,33 +1,31 @@
-# PB-04: svchost.exe detected as Malware
+<h1 align="center">🛡️ PB-04: svchost.exe detected as Malware</h1>
 
-| รายการ | รายละเอียด |
-|--------|-----------|
-| **Alert Name** | svchost.exe detected as Malware |
-| **Severity** | 🟠 High |
-| **MITRE ATT&CK** | T1036.005 (Masquerading), T1055 (Process Injection), T1543.003 (Windows Service) |
-| **Platform** | SentinelOne EDR/XDR |
-| **วันที่สร้าง** | มีนาคม 2026 |
+<p align="center">
+  <img src="https://img.shields.io/badge/Severity-🟠 HIGH-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Platform-SentinelOne-6C2DC7?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/MITRE-T1036 | T1055-blue?style=for-the-badge" />
+</p>
 
 ---
 
-## 1. ภาพรวมของ Alert
+## 🎯 Quick Reference
 
-**svchost.exe** (Service Host) เป็น Process หลักของ Windows ที่ใช้รัน Windows Services  
-โดยปกติจะมี `svchost.exe` ทำงานหลายตัวพร้อมกัน ซึ่งเป็นเรื่องปกติ
+| รายการ | รายละเอียด |
+|:------:|:-----------|
+| **Alert** | `svchost.exe detected as Malware` |
+| **ประเภท** | Masquerading / Process Injection |
+| **True Positive Rate** | ปานกลาง — ต้องตรวจสอบ Path + Behavior |
+| **SLA** | ≤ 30 นาที |
 
-**ทำไมถึงอันตราย?**
-- มัลแวร์มักจะ **ปลอมชื่อเป็น `svchost.exe`** เพราะเป็น Process ที่พบทั่วไป
-- มัลแวร์สามารถ **Inject Code** เข้าไปใน `svchost.exe` ตัวจริง
-- ผู้ใช้จะไม่สังเกตเห็นเพราะคิดว่าเป็น Process ปกติ
-
-**การแยกแยะ svchost.exe ตัวจริงกับของปลอม:**
-
-| คุณสมบัติ | svchost.exe ตัวจริง | svchost.exe ปลอม |
-|----------|-------------------|-----------------|
-| **Path** | `C:\Windows\System32\svchost.exe` | ที่อื่น |
-| **Parent Process** | `services.exe` | อื่นๆ |
-| **Digital Signature** | Microsoft Windows | ไม่มี / อื่น |
-| **Command Line** | `-k <ServiceGroup>` | อื่นๆ หรือไม่มี |
+> [!IMPORTANT]
+> **svchost.exe** เป็น Process หลักของ Windows — ปกติมีหลายตัวทำงานพร้อมกัน
+>
+> | คุณสมบัติ | ✅ ตัวจริง | ❌ ของปลอม |
+> |:---------|:---------|:---------|
+> | **Path** | `C:\Windows\System32\svchost.exe` | ที่อื่น |
+> | **Parent** | `services.exe` | อื่นๆ |
+> | **Signature** | Microsoft Windows | ไม่มี |
+> | **CmdLine** | `-k <ServiceGroup>` | ไม่มี `-k` |
 
 ---
 
@@ -35,20 +33,20 @@
 
 ```mermaid
 flowchart TD
-    A["🔔 Alert: svchost.exe detected"] --> B["Step 1: เปิด Ticket<br/>จดบันทึก File Path + Parent"]
+    A["🔔 Alert: svchost.exe detected"] --> B["Step 1: เปิด Ticket\nจดบันทึก File Path + Parent"]
     B --> C{"Step 2: File Path?"}
-    C -->|"System32"| D["Step 3: ตรวจ Parent,<br/>CmdLine, Signature"]
-    C -->|"Path อื่น"| E["🔴 ปลอมแน่นอน!<br/>True Positive"]
-    D --> F{"Parent = services.exe?<br/>CmdLine มี -k?"}
-    F -->|"✅ ปกติ"| G["Step 4: ตรวจ Memory Injection<br/>DLL จากนอก System32?"]
+    C -->|"System32"| D["Step 3: ตรวจ Parent,\nCmdLine, Signature"]
+    C -->|"Path อื่น"| E["🔴 ปลอมแน่นอน!\nTrue Positive"]
+    D --> F{"Parent = services.exe?\nCmdLine มี -k?"}
+    F -->|"✅ ปกติ"| G["Step 4: ตรวจ Memory Injection\nDLL จากนอก System32?"]
     F -->|"❌ ผิดปกติ"| E
     G --> H{"พบ Injection?"}
-    H -->|"✅ ใช่"| I["True Positive<br/>Process Injection"]
+    H -->|"✅ ใช่"| I["True Positive\nProcess Injection"]
     H -->|"❌ ไม่"| J["ตรวจ Hash VirusTotal"]
     E --> K["Step 5-6: Hash + Scope Analysis"]
     I --> K
     J --> K
-    K --> L["Step 7: Containment<br/>Quarantine + Kill"]
+    K --> L["Step 7: Containment\nQuarantine + Kill"]
     L --> M{"Process Injection?"}
     M -->|"✅ ใช่"| N["Step 8: Reboot + ลบ DLL"]
     M -->|"❌ ไม่"| O["Step 8: Remediate + Rollback"]
@@ -63,120 +61,78 @@ flowchart TD
 
 ---
 
-## 2. ขั้นตอนการตอบสนอง (Response Steps)
+## 📋 ขั้นตอนการตอบสนอง
 
-### Step 1: รับ Alert และเปิด Incident Ticket
-1. เข้า **SentinelOne Console** → **Incidents / Threats**
-2. ค้นหา Alert: `svchost.exe detected as Malware`
-3. จดบันทึก:
-   - **Endpoint Name**, **IP Address**, **Logged-in User**
-   - **File Path** ← **ข้อมูลสำคัญที่สุด**
-   - **SHA256 Hash**
-   - **Parent Process Name & Path**
-   - **Command Line Arguments**
-   - **Timestamp**
-4. เปิด Incident Ticket
+### 🔹 Step 1 — รับ Alert และเปิด Incident Ticket
+จดบันทึก **File Path**, SHA256 Hash, Parent Process, Command Line Arguments
 
-### Step 2: ตรวจสอบ File Path (การตัดสินใจแรก)
-1. ดู **File Path** ใน Threat Details:
+### 🔹 Step 2 — ตรวจสอบ File Path ⭐
 
-| File Path | การวินิจฉัย | ขั้นตอนถัดไป |
-|-----------|------------|-------------|
-| `C:\Windows\System32\svchost.exe` | **Path ของจริง** → ต้องวิเคราะห์เพิ่ม | ไป Step 3 |
-| Path อื่นใดก็ตาม | **ปลอมแน่นอน** → True Positive | ข้ามไป Step 5 |
+| ผลตรวจสอบ | ➡️ ขั้นตอนถัดไป |
+|:---------|:--------------|
+| Path = `C:\Windows\System32\` | ไป Step 3 (ตรวจเพิ่ม) |
+| Path ≠ System32 | 🔴 **ปลอมแน่นอน** → ข้ามไป Step 5 |
 
-### Step 3: ตรวจสอบ svchost.exe ที่อยู่ใน System32
-> ⚠️ ทำ Step นี้เฉพาะกรณีไฟล์อยู่ใน `C:\Windows\System32\`
+### 🔹 Step 3 — ตรวจสอบ svchost.exe ใน System32
 
-1. **ตรวจสอบ Parent Process**:
-   - ✅ Parent = `services.exe` → ปกติ
-   - ❌ Parent ≠ `services.exe` → **น่าสงสัยมาก**
-2. **ตรวจสอบ Command Line**:
-   - ✅ ปกติ: `svchost.exe -k netsvcs` หรือ `-k LocalService`
-   - ❌ ผิดปกติ: ไม่มี `-k` parameter หรือมี parameter แปลกๆ
-3. **ตรวจสอบ Network Connections**:
-   - ดูใน Attack Storyline ว่ามีการติดต่อ IP ที่น่าสงสัยหรือไม่
-   - `svchost.exe` ตัวจริงจะติดต่อเฉพาะ Microsoft Services (Windows Update, etc.)
-4. **ตรวจสอบ Loaded DLLs**:
-   - ดูว่ามี DLL ที่ถูกโหลดจากนอก `System32` หรือไม่
-   - ⚠️ DLL จาก `C:\Users\`, `C:\Temp\`, `AppData` → **Process Injection**
+| รายการ | ✅ ปกติ | ❌ น่าสงสัย |
+|:------|:-------|:----------|
+| Parent Process | `services.exe` | อื่นๆ |
+| Command Line | `-k netsvcs` หรือ `-k LocalService` | ไม่มี `-k` |
+| Network | Microsoft Services เท่านั้น | IP ที่ไม่รู้จัก |
+| Loaded DLLs | จาก System32 ทั้งหมด | DLL จาก Users/Temp/AppData |
 
-### Step 4: ตรวจสอบว่าเป็น Process Injection หรือไม่
-1. ใน Attack Storyline ดู Indicators:
-   - **Memory Injection Indicators**: มี Alert เรื่อง DLL Injection หรือไม่
-   - **Unusual Memory Usage**: `svchost.exe` ใช้ Memory สูงผิดปกติ
-   - **Unusual Network Traffic**: ติดต่อ IP/Port ที่ไม่ใช่ Microsoft
-2. ถ้าพบสัญญาณของ Process Injection:
-   - นี่เป็น **True Positive** → ไป Step 5
-3. ถ้าไม่พบสัญญาณ:
-   - อาจเป็น **False Positive** → ยืนยันด้วย Hash ใน Step 5
+### 🔹 Step 4 — ตรวจสอบ Process Injection
 
-### Step 5: ตรวจสอบ Hash ด้วย Threat Intelligence
-1. คัดลอก **SHA256 Hash** จาก Threat Details
-2. ค้นหาใน **VirusTotal**:
-   - Detection > 10 engines → **Malicious**
-   - ดู Family Name → เช่น Emotet, TrickBot, Cobalt Strike
-3. ถ้า Hash ตรงกับ Microsoft Signed File → อาจเป็น FP ส่วน Process Injection
-4. บันทึกผล
+> [!WARNING]
+> สัญญาณของ Process Injection:
+> - Memory Injection / DLL Injection Alert
+> - Memory Usage สูงผิดปกติ
+> - Network Traffic ไปยัง IP ที่ไม่ใช่ Microsoft
 
-### Step 6: ตรวจสอบการแพร่กระจาย (Scope)
-1. **Deep Visibility** → ค้นหา:
-   ```
-   FileSHA256 = "<Hash>" OR (FileName = "svchost.exe" AND NOT FilePath = "C:\Windows\System32\svchost.exe")
-   ```
-2. ถ้าพบหลายเครื่อง → **Escalate ทันที**
+### 🔹 Step 5-6 — Hash Check + Scope Analysis
 
-### Step 7: Containment
-1. **Network Quarantine**:
-   - SentinelOne → Sentinels → เลือกเครื่อง → **"Disconnect from Network"**
-2. **Kill Process**:
-   - ⚠️ **ข้อควรระวัง**: การ Kill `svchost.exe` ตัวจริงอาจทำให้เครื่องมีปัญหา
-   - ถ้าเป็น svchost.exe **ปลอม** (Path ไม่ใช่ System32) → Kill ได้ปลอดภัย
-   - ถ้าเป็น svchost.exe **ตัวจริง** ที่ถูก Inject → Kill แล้ว Windows จะ Restart Service
-3. **Quarantine File**
+ค้นหาใน VirusTotal + Deep Visibility
 
-### Step 8: Remediation
-1. **Remediate** ผ่าน SentinelOne → **"Actions"** → **"Remediate"**
-2. ตรวจสอบ **Persistence**:
-   - ถ้ามัลแวร์ Register เป็น Windows Service → ต้องลบ Service
-   - ตรวจสอบ Scheduled Tasks
-   - ตรวจสอบ Registry Run Keys
-3. ถ้าเป็น Process Injection:
-   - **Reboot** เครื่องเพื่อ Clear Memory
-   - ตรวจสอบว่า DLL ที่ถูก Inject ถูกลบแล้ว
-4. **Rollback** ถ้าจำเป็น
+### 🔹 Step 7 — Containment
 
-### Step 9: Post-Remediation Check
-1. รอ 15-30 นาที
-2. ตรวจสอบว่าไม่มี Alert ใหม่
-3. ตรวจสอบว่าเครื่องทำงานปกติ
-4. ปลด Network Quarantine
-5. แจ้ง End User
+| ลำดับ | การดำเนินการ | ⚠️ ข้อควรระวัง |
+|:-----:|:------------|:-------------|
+| 1️⃣ | Network Quarantine | — |
+| 2️⃣ | Kill Process | svchost ปลอม → Kill ปลอดภัย / ตัวจริง → Windows Restart |
+| 3️⃣ | Quarantine File | — |
 
-### Step 10: อัปเดต Verdict และปิด Incident
-1. ตั้ง **Analyst Verdict**:
-   - True Positive: บันทึกรายละเอียดมัลแวร์ที่พบ
-   - False Positive: สร้าง Exclusion อย่างระมัดระวัง
-2. สรุปใน Incident Ticket
-3. ปิด Ticket
+### 🔹 Step 8 — Remediation
+
+| กรณี | การแก้ไข |
+|:-----|:--------|
+| **ปลอมชื่อ (Path อื่น)** | Remediate + Rollback + ลบ Service/Persistence |
+| **Process Injection** | Reboot เคลียร์ Memory + ลบ DLL ที่ Inject |
+
+### 🔹 Step 9-10 — Post-Check + ปิด Ticket
+
+⏱️ รอ 15-30 นาที → ตรวจสอบ → ปลด Quarantine → ปิด Ticket
 
 ---
 
-## 3. Escalation Criteria
+## 🚨 Escalation Criteria
 
-| สถานการณ์ | ดำเนินการ |
-|-----------|----------|
-| ยืนยัน Process Injection ใน svchost.exe จริง | แจ้ง SOC Manager + IR Team |
-| พบ Cobalt Strike / APT Framework | แจ้ง SOC Manager ทันที |
-| พบหลายเครื่อง | แจ้ง SOC Manager + IR Team |
-| Domain Controller ถูกโจมตี | แจ้ง SOC Manager + IT Team ทันที |
+| สถานการณ์ | 🎬 ดำเนินการ |
+|:---------|:------------|
+| ยืนยัน Process Injection ใน svchost จริง | 🔴 แจ้ง SOC Manager + **IR Team** |
+| พบ Cobalt Strike / APT Framework | 🔴 แจ้ง SOC Manager **ทันที** |
+| Domain Controller ถูกโจมตี | 🔴 แจ้ง SOC Manager + **IT Team ทันที** |
 
 ---
 
-## 4. แนวทางป้องกัน
+## 🛡️ แนวทางป้องกัน
 
-- ตั้ง SentinelOne Policy เป็น **Protect** mode
-- Enable **Anti-Tampering** ใน SentinelOne
-- จำกัดการใช้ Admin Privileges (Least Privilege Principle)
-- Monitor `svchost.exe` ที่ไม่ได้อยู่ใน `C:\Windows\System32\`
-- ติดตั้ง Windows Security Updates สม่ำเสมอ
+- ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
+- ✅ Enable **Anti-Tampering**
+- ✅ จำกัด Admin Privileges (Least Privilege)
+- ✅ Monitor `svchost.exe` นอก System32
+- ✅ ติดตั้ง Windows Security Updates สม่ำเสมอ
+
+---
+
+<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>

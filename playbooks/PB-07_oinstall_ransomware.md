@@ -1,25 +1,29 @@
-# PB-07: OInstall_x64.exe detected as Ransomware
+<h1 align="center">🚨 PB-07: OInstall_x64.exe detected as Ransomware</h1>
 
-| รายการ | รายละเอียด |
-|--------|-----------|
-| **Alert Name** | OInstall_x64.exe detected as Ransomware |
-| **Severity** | 🔴 Critical |
-| **MITRE ATT&CK** | T1486 (Data Encrypted for Impact), T1588.001 (Obtain Capabilities: Malware) |
-| **Platform** | SentinelOne EDR/XDR |
-| **วันที่สร้าง** | มีนาคม 2026 |
+<p align="center">
+  <img src="https://img.shields.io/badge/Severity-🔴 CRITICAL-red?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Platform-SentinelOne-6C2DC7?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/MITRE-T1486 | T1588-blue?style=for-the-badge" />
+</p>
 
 ---
 
-## 1. ภาพรวมของ Alert
+## 🎯 Quick Reference
 
-**OInstall_x64.exe** หรือที่รู้จักในชื่อ **"Office C2R Install"** เป็นเครื่องมือ **โจรสลัด (Pirate Tool)** ที่ใช้ติดตั้ง Microsoft Office โดยไม่มี License
+| รายการ | รายละเอียด |
+|:------:|:-----------|
+| **Alert** | `OInstall_x64.exe detected as Ransomware` |
+| **ประเภท** | Pirated Office Installer + Ransomware/Cryptominer |
+| **True Positive Rate** | สูงมาก — ไฟล์นี้ต้องถูกลบเสมอ |
+| **SLA** | ≤ **15 นาที** |
 
-> ⚠️ **สำคัญมาก**: SentinelOne ตรวจจับเป็น **Ransomware** เพราะ:
-> 1. ไฟล์นี้เป็น **Cracked Software** ที่มักฝังมัลแวร์
-> 2. บาง Version ถูกฝัง **Ransomware** หรือ **Cryptominer** จริงๆ
-> 3. เครื่องมือนี้มีพฤติกรรมคล้าย Malware (แก้ไข System Files, Disable Security)
-
-**ไม่ว่าจะเป็น True Positive หรือ False Positive → ไฟล์นี้ต้องถูกลบออก** เพราะเป็นซอฟต์แวร์ละเมิดลิขสิทธิ์
+> [!CAUTION]
+> **OInstall_x64.exe** คือ **Office C2R Install** — เครื่องมือโจรสลัดที่ใช้ติดตั้ง Office โดยไม่มี License
+> 
+> 🔴 **ไม่ว่าจะเป็นอะไร → ไฟล์นี้ต้องถูกลบออก** เพราะ:
+> 1. บาง Version ฝัง **Ransomware** หรือ **Cryptominer** จริง
+> 2. มีพฤติกรรมคล้าย Malware (แก้ไข System Files, Disable Security)
+> 3. เป็น **ซอฟต์แวร์ละเมิดลิขสิทธิ์**
 
 ---
 
@@ -27,21 +31,21 @@
 
 ```mermaid
 flowchart TD
-    A["🚨 Alert: OInstall_x64.exe<br/>Ransomware!"] --> B["Step 1: IMMEDIATE ACTION<br/>Kill + Quarantine + Isolate"]
+    A["🚨 Alert: OInstall_x64.exe\nRansomware!"] --> B["Step 1: IMMEDIATE ACTION\nKill + Quarantine + Isolate"]
     B --> C["Step 2: ตรวจสอบการเข้ารหัสไฟล์"]
     C --> D{"มีไฟล์ถูกเข้ารหัส?"}
-    D -->|"✅ มี!"| E["🔴🔴 CRITICAL<br/>Escalate + Rollback ทันที"]
-    D -->|"❌ ไม่มี"| F["SentinelOne หยุดทัน<br/>หรือเป็น Cracked Software"]
+    D -->|"✅ มี!"| E["🔴🔴 CRITICAL\nEscalate + Rollback ทันที"]
+    D -->|"❌ ไม่มี"| F["SentinelOne หยุดทัน\nหรือเป็น Cracked Software"]
     E --> G["Step 6: Rollback ด้วย VSS"]
     F --> H["Step 3: ตรวจ Hash VirusTotal"]
     H --> I{"Classification?"}
     I -->|"Ransomware"| E
-    I -->|"HackTool / PUP"| J["Cracked Software<br/>ยังต้องลบ!"]
-    G --> K["Step 5: Scope Analysis<br/>ค้นหา OInstall + KMS ทุกเครื่อง"]
+    I -->|"HackTool / PUP"| J["Cracked Software\nยังต้องลบ!"]
+    G --> K["Step 5: Scope Analysis\nค้นหา OInstall + KMS ทุกเครื่อง"]
     J --> K
     K --> L{"พบหลายเครื่อง?"}
     L -->|"✅ ใช่"| M["Isolate ทุกเครื่อง"]
-    L -->|"❌ ไม่"| N["Step 7-8: Remediate<br/>ติดตั้ง Office License จริง"]
+    L -->|"❌ ไม่"| N["Step 7-8: Remediate\nติดตั้ง Office License จริง"]
     M --> N
     N --> O["ปิด Ticket + แจ้ง IT Manager"]
 
@@ -52,126 +56,78 @@ flowchart TD
 
 ---
 
-## 2. ขั้นตอนการตอบสนอง (Response Steps)
+## 📋 ขั้นตอนการตอบสนอง
 
-### Step 1: 🚨 ดำเนินการเร่งด่วน (IMMEDIATE ACTIONS)
-> เนื่องจาก Alert นี้เป็น **Ransomware** ต้องดำเนินการทันทีก่อนวิเคราะห์
+### 🔹 Step 1 — 🚨 IMMEDIATE ACTIONS (ดำเนินการทันที!)
 
-1. เข้า **SentinelOne Console** → **Incidents / Threats**
-2. ค้นหา Alert: `OInstall_x64.exe detected as Ransomware`
-3. **ตรวจสอบ Mitigation Status ทันที**:
-   - ✅ ถ้า SentinelOne **Killed + Quarantined** แล้ว → ดี ไปต่อ
-   - ❌ ถ้ายังไม่ได้ดำเนินการ → **Kill + Quarantine ทันที**:
-     - **"Actions"** → **"Kill"** → แล้ว **"Quarantine"**
-4. **Network Quarantine เครื่องทันที**:
-   - **Sentinels** → เลือกเครื่อง → **"Actions"** → **"Disconnect from Network"**
-   - ⚠️ ทำทันที! ไม่ต้องรอวิเคราะห์ก่อน (เพราะเป็น Ransomware Alert)
-5. จดบันทึกข้อมูลสำคัญ:
-   - Endpoint Name, IP, User, File Path, Hash, Timestamp
-6. เปิด **Incident Ticket** พร้อมระบุ Severity = **Critical**
+> [!CAUTION]
+> เนื่องจาก Alert เป็น **Ransomware** → ดำเนินการ **ทันที** ก่อนวิเคราะห์!
 
-### Step 2: ตรวจสอบว่ามีการเข้ารหัสไฟล์หรือไม่
-1. ตรวจสอบใน **Attack Storyline**:
-   - ดูว่า `OInstall_x64.exe` มีการ **แก้ไขไฟล์จำนวนมาก** หรือไม่
-   - ⚠️ ถ้ามีการเปลี่ยน File Extension เป็น `.encrypted`, `.locked`, `.crypto` → **Ransomware กำลังทำงาน!**
-   - ⚠️ ถ้ามีการสร้างไฟล์ `README.txt` หรือ `HOW_TO_DECRYPT.txt` → **Ransomware เข้ารหัสแล้ว!**
-2. ถ้า **ไม่มีการเข้ารหัสไฟล์**:
-   - อาจเป็น Detection ก่อน Ransomware จะทำงาน (SentinelOne หยุดทัน)
-   - หรืออาจเป็น Cracked Software ที่ยังไม่ได้ทำอะไร
-3. ถ้า **มีการเข้ารหัสไฟล์**:
-   - ⚠️ **Escalate ทันที** → แจ้ง SOC Manager
-   - เตรียม **Rollback** (ดู Step 6)
+| ลำดับ | ⚡ ดำเนินการทันที | วิธีทำ |
+|:-----:|:-----------------|:------|
+| 1️⃣ | **Kill + Quarantine** | Actions → "Kill" → "Quarantine" |
+| 2️⃣ | **Isolate เครื่อง** | Sentinels → Actions → "Disconnect from Network" |
+| 3️⃣ | **เปิด Ticket** | Severity = **Critical** |
 
-### Step 3: ตรวจสอบ Hash ด้วย Threat Intelligence
-1. คัดลอก **SHA256 Hash**
-2. ค้นหาใน **VirusTotal**:
-   - ดู Detection Rate
-   - ดู Classification → Ransomware? HackTool? PUP?
-   - ดู Family Name → เช่น KMSPico, Office Activator, etc.
-3. ตรวจสอบว่าเป็น:
-   - **Cracked Software (HackTool/PUP)** → ยังอันตราย แต่ไม่ใช่ Ransomware
-   - **Ransomware จริง** → Critical Incident
-4. บันทึกผล
+### 🔹 Step 2 — ตรวจสอบการเข้ารหัสไฟล์ ⭐
 
-### Step 4: ตรวจสอบ Attack Storyline
-1. ดู **Parent Process**: ใครรัน `OInstall_x64.exe`
-   - ผู้ใช้รันเอง? (Double-click จาก Explorer)
-   - Automated Script รัน?
-2. ดู **Child Processes** / **Activities**:
-   - ⚠️ Disable Windows Defender → **มัลแวร์ปิด Security**
-   - ⚠️ แก้ไข Registry → อาจเป็น KMS Activation
-   - ⚠️ Network Connection ไปภายนอก → **C2 / Download มัลแวร์เพิ่ม**
-   - ⚠️ สร้างไฟล์ในหลายโฟลเดอร์ → **Ransomware Encryption**
-3. **Screenshot** Storyline
+| สัญญาณ | ⚠️ ความหมาย |
+|:-------|:-----------|
+| File Extension เปลี่ยนเป็น `.encrypted`, `.locked` | 🔴 **Ransomware กำลังทำงาน!** |
+| พบไฟล์ `HOW_TO_DECRYPT.txt` | 🔴 **Ransomware เข้ารหัสแล้ว!** |
+| ไม่มีการเปลี่ยนแปลงไฟล์ | ✅ SentinelOne หยุดทัน / Cracked SW |
 
-### Step 5: ตรวจสอบการแพร่กระจาย
-1. **Deep Visibility** → ค้นหา:
-   ```
-   FileName = "OInstall_x64.exe" OR FileName Contains "OInstall"
-   ```
-2. ค้นหาด้วย Hash
-3. ค้นหาไฟล์ที่เกี่ยวข้อง:
-   ```
-   FileName In Contains ("KMSPico","KMSAuto","office-activator","C2R")
-   ```
-4. ถ้าพบหลายเครื่อง → **Isolate ทุกเครื่องที่พบ**
+### 🔹 Step 3 — ตรวจ Hash VirusTotal
 
-### Step 6: Remediation
-1. **Remediate** ผ่าน SentinelOne:
-   - **"Actions"** → **"Remediate"**
-2. **Rollback** (ถ้ามีการเข้ารหัสไฟล์):
-   - **"Actions"** → **"Rollback"**
-   - SentinelOne ใช้ VSS Snapshot คืนค่าไฟล์ที่ถูกเข้ารหัส
-   - ⚠️ **Rollback ใช้ได้เฉพาะเมื่อ SentinelOne Agent มี VSS enabled**
-3. ตรวจสอบ **Persistence**:
-   - ลบ Scheduled Tasks ที่เกี่ยวข้อง
-   - ตรวจสอบ Services ที่ถูกเพิ่ม
-   - ตรวจสอบ Registry Run Keys
-4. ตรวจสอบว่า **Windows Defender** ถูก Enable กลับ
-5. ตรวจสอบว่า **License ของ Office** เป็นอย่างไร:
-   - ถ้าใช้ Pirated Office → ต้องให้ IT ติดตั้ง Office License ที่ถูกต้อง
+| Classification | ความหมาย |
+|:-------------|:---------|
+| Ransomware | 🔴 **Critical** — Escalate ทันที |
+| HackTool / PUP | 🟠 Cracked Software — ยังอันตราย ต้องลบ |
 
-### Step 7: Post-Remediation Check
-1. รอ 15-30 นาที
-2. ตรวจสอบ:
-   - ไม่มี Alert ใหม่
-   - ไฟล์ที่ถูกเข้ารหัส (ถ้ามี) ถูก Rollback สำเร็จ
-   - Windows Defender ทำงานปกติ
-   - ไม่มี Process ที่เกี่ยวข้องทำงาน
-3. ปลด **Network Quarantine**
-4. แจ้ง End User:
-   - "เครื่องของคุณถูกพบซอฟต์แวร์ละเมิดลิขสิทธิ์ที่อาจเป็นอันตราย"
-   - "ห้ามดาวน์โหลดหรือติดตั้งซอฟต์แวร์ที่ไม่ได้รับอนุญาต"
+### 🔹 Step 4-5 — Storyline + Scope Analysis
 
-### Step 8: อัปเดต Verdict และปิด Incident
-1. ตั้ง **Analyst Verdict** → **True Positive**
-   - ⚠️ แม้จะเป็น Cracked Software ที่ไม่ใช่ Ransomware จริง ก็ถือเป็น True Positive เพราะเป็นซอฟต์แวร์อันตราย
-2. สรุปใน Incident Ticket:
-   - สาเหตุ: ผู้ใช้ดาวน์โหลดและรัน Pirated Office Installer
-   - ผลกระทบ: (มี/ไม่มี) การเข้ารหัสไฟล์
-   - การแก้ไข: Remediated + Rollback (ถ้ามี)
-   - คำแนะนำ: ติดตั้ง Office License ที่ถูกต้อง
-3. **แจ้ง IT Manager** เพื่อดำเนินการด้าน HR/Policy (ถ้าจำเป็น)
-4. ปิด Ticket
+ค้นหา:
+```
+FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contains "KMSAuto"
+```
+
+### 🔹 Step 6 — Remediation + Rollback
+
+| การดำเนินการ | รายละเอียด |
+|:------------|:----------|
+| **Remediate** | Actions → "Remediate" |
+| **Rollback** (ถ้ามีเข้ารหัส) | Actions → "Rollback" (VSS Snapshot) |
+| **ตรวจ Persistence** | ลบ Services, Scheduled Tasks, Registry |
+| **ตรวจ Defender** | ให้แน่ใจว่า Defender ถูก Enable กลับ |
+| **Office License** | แจ้ง IT ติดตั้ง License ที่ถูกต้อง |
+
+### 🔹 Step 7-8 — Post-Check + ปิด Incident
+
+> [!IMPORTANT]
+> Analyst Verdict = **True Positive เสมอ** (แม้เป็น Cracked SW ที่ไม่ใช่ Ransomware จริง)
+> แจ้ง **IT Manager** เพื่อดำเนินการด้าน HR/Policy ถ้าจำเป็น
 
 ---
 
-## 3. Escalation Criteria
+## 🚨 Escalation Criteria
 
-| สถานการณ์ | ดำเนินการ |
-|-----------|----------|
-| มีการเข้ารหัสไฟล์ (Ransomware Active) | 🔴 แจ้ง SOC Manager + IR Team **ทันที** |
-| Rollback ไม่สำเร็จ | 🔴 แจ้ง SOC Manager + IT Backup Team |
+| สถานการณ์ | 🎬 ดำเนินการ |
+|:---------|:------------|
+| มีการเข้ารหัสไฟล์ (Ransomware Active) | 🔴🔴 แจ้ง SOC Manager + **IR Team ทันที** |
+| Rollback ไม่สำเร็จ | 🔴 แจ้ง SOC Manager + **IT Backup Team** |
+| ข้อมูลสำคัญถูกเข้ารหัส | 🔴 แจ้ง SOC Manager + **Management** |
 | พบหลายเครื่อง | 🟠 แจ้ง SOC Manager |
-| ข้อมูลสำคัญถูกเข้ารหัส | 🔴 แจ้ง SOC Manager + Management |
 
 ---
 
-## 4. แนวทางป้องกัน
+## 🛡️ แนวทางป้องกัน
 
-- **ห้ามใช้ Cracked/Pirated Software** อย่างเด็ดขาด — ตั้งเป็นนโยบายบริษัท
-- ติดตั้ง **Microsoft Office License** ที่ถูกต้องให้ทุกเครื่อง
-- ตั้ง **Application Control** Block ไฟล์ที่ชื่อ `OInstall`, `KMSPico`, `KMSAuto`
-- ตั้ง SentinelOne Policy เป็น **Protect** mode
-- **Enable VSS** ใน SentinelOne Agent เพื่อให้ Rollback ได้
-- อบรมผู้ใช้เรื่อง **ความเสี่ยงของ Pirated Software**
+- 🚫 **ห้ามใช้ Cracked/Pirated Software** อย่างเด็ดขาด
+- ✅ ติดตั้ง **Microsoft Office License** ที่ถูกต้องให้ทุกเครื่อง
+- ✅ ตั้ง **Application Control** Block `OInstall`, `KMSPico`, `KMSAuto`
+- ✅ **Enable VSS** ใน SentinelOne Agent เพื่อให้ Rollback ได้
+- ✅ อบรมผู้ใช้เรื่อง **ความเสี่ยงของ Pirated Software**
+
+---
+
+<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
