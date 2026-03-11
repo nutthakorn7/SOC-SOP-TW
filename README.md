@@ -45,6 +45,8 @@
 > 🔍 **ต้องการ Query สำเร็จรูปสำหรับ Deep Visibility?** → [🔍 Query Cheatsheet](DEEP_VISIBILITY_QUERIES.md) — Copy-Paste ได้เลย!
 >
 > 📚 **ไม่เคยใช้ VirusTotal?** → [📚 VirusTotal Guide](VIRUSTOTAL_GUIDE.md) — คู่มือวิเคราะห์ Hash/IP/URL สำหรับมือใหม่
+>
+> 🔐 **จะสร้าง Exclusion?** → [🔐 Exclusion Policy](EXCLUSION_POLICY.md) — วิธีสร้าง Exclusion อย่างปลอดภัย
 
 ---
 
