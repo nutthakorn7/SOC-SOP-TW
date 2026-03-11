@@ -26,6 +26,11 @@
 
 ---
 
+> [!TIP]
+> 📌 **ต้องการดูสรุปทุก Alert ในหน้าเดียว?** → [⚡ Quick Reference Card](QUICK_REFERENCE.md) — พิมพ์แปะข้างจอได้!
+
+---
+
 ## 🔰 วิธีใช้ Playbook
 
 ```
