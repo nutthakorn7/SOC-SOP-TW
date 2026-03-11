@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -24,7 +24,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -54,9 +54,9 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — รับ Alert + เปิด Ticket
+### Step 1 — รับ Alert + เปิด Ticket
 
 | ข้อมูลที่ต้องจด | ⚡ ความสำคัญ |
 |:----------------|:------------|
@@ -68,7 +68,7 @@ flowchart TD
 
 Severity เบื้องต้น: **Low**
 
-### 🔹 Step 2 — ตรวจ Hash VirusTotal ⭐
+### Step 2 — ตรวจ Hash VirusTotal ⭐
 
 | ผลลัพธ์ VirusTotal | 🚦 วินิจฉัย | ➡️ ถัดไป |
 |:------------------|:----------|:--------|
@@ -77,7 +77,7 @@ Severity เบื้องต้น: **Low**
 | > 10/70 engines | 🔴 **Malicious** | ยกระดับ → Step 5B |
 | Not Found | **Unknown** — ต้องวิเคราะห์เพิ่ม | ทำ Step 3 |
 
-### 🔹 Step 3 — ตรวจ Storyline
+### Step 3 — ตรวจ Storyline
 
 | พฤติกรรม | ✅ ปกติ (FP) | ❌ ผิดปกติ (TP) |
 |:---------|:----------|:-------------|
@@ -86,7 +86,7 @@ Severity เบื้องต้น: **Low**
 | Registry Change | ไม่มี | แก้ไข Registry |
 | Digital Signature | มี Signer ที่รู้จัก | ไม่มี Signature |
 
-### 🔹 Step 4 — ตัดสินใจ
+### Step 4 — ตัดสินใจ
 
 | เงื่อนไข | วินิจฉัย | ดำเนินการ |
 |:--------|:---------|:---------|
@@ -94,7 +94,7 @@ Severity เบื้องต้น: **Low**
 | มี Network/Child/Registry | 🔴 **True Positive** | Step 5B |
 | VirusTotal > 10 | 🔴 **Malicious** | Step 5B |
 
-### 🔹 Step 5A — กรณี False Positive
+### Step 5A — กรณี False Positive
 
 1. Analyst Verdict → **False Positive**
 2. สร้าง **Exclusion** ด้วย **SHA256 Hash + File Path**
@@ -104,7 +104,7 @@ Severity เบื้องต้น: **Low**
 
 3. ปิด Ticket
 
-### 🔹 Step 5B — กรณี True Positive
+### Step 5B — กรณี True Positive
 
 | ลำดับ | การดำเนินการ |
 |:-----:|:------------|
@@ -118,7 +118,7 @@ Severity เบื้องต้น: **Low**
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -129,7 +129,7 @@ Severity เบื้องต้น: **Low**
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
 - ✅ **Block Unknown Software** ใน Application Control
@@ -139,4 +139,4 @@ Severity เบื้องต้น: **Low**
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

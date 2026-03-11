@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -27,7 +27,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -56,9 +56,9 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — 🚨 IMMEDIATE ACTIONS (ดำเนินการทันที!)
+### Step 1 — 🚨 IMMEDIATE ACTIONS (ดำเนินการทันที!)
 
 > [!CAUTION]
 > เนื่องจาก Alert เป็น **Ransomware** → ดำเนินการ **ทันที** ก่อนวิเคราะห์!
@@ -69,7 +69,7 @@ flowchart TD
 | 2️⃣ | **Isolate เครื่อง** | Sentinels → Actions → "Disconnect from Network" |
 | 3️⃣ | **เปิด Ticket** | Severity = **Critical** |
 
-### 🔹 Step 2 — ตรวจสอบการเข้ารหัสไฟล์ ⭐
+### Step 2 — ตรวจสอบการเข้ารหัสไฟล์ ⭐
 
 | สัญญาณ | ⚠️ ความหมาย |
 |:-------|:-----------|
@@ -77,21 +77,21 @@ flowchart TD
 | พบไฟล์ `HOW_TO_DECRYPT.txt` | 🔴 **Ransomware เข้ารหัสแล้ว!** |
 | ไม่มีการเปลี่ยนแปลงไฟล์ | ✅ SentinelOne หยุดทัน / Cracked SW |
 
-### 🔹 Step 3 — ตรวจ Hash VirusTotal
+### Step 3 — ตรวจ Hash VirusTotal
 
 | Classification | ความหมาย |
 |:-------------|:---------|
 | Ransomware | 🔴 **Critical** — Escalate ทันที |
 | HackTool / PUP | 🟠 Cracked Software — ยังอันตราย ต้องลบ |
 
-### 🔹 Step 4-5 — Storyline + Scope Analysis
+### Step 4-5 — Storyline + Scope Analysis
 
 ค้นหา:
 ```
 FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contains "KMSAuto"
 ```
 
-### 🔹 Step 6 — Remediation + Rollback
+### Step 6 — Remediation + Rollback
 
 | การดำเนินการ | รายละเอียด |
 |:------------|:----------|
@@ -101,7 +101,7 @@ FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contain
 | **ตรวจ Defender** | ให้แน่ใจว่า Defender ถูก Enable กลับ |
 | **Office License** | แจ้ง IT ติดตั้ง License ที่ถูกต้อง |
 
-### 🔹 Step 7-8 — Post-Check + ปิด Incident
+### Step 7-8 — Post-Check + ปิด Incident
 
 > [!IMPORTANT]
 > Analyst Verdict = **True Positive เสมอ** (แม้เป็น Cracked SW ที่ไม่ใช่ Ransomware จริง)
@@ -109,7 +109,7 @@ FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contain
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -120,7 +120,7 @@ FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contain
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - 🚫 **ห้ามใช้ Cracked/Pirated Software** อย่างเด็ดขาด
 - ✅ ติดตั้ง **Microsoft Office License** ที่ถูกต้องให้ทุกเครื่อง
@@ -131,4 +131,4 @@ FileName = "OInstall_x64.exe" OR FileName Contains "KMSPico" OR FileName Contain
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

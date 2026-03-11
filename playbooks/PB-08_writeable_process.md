@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -27,7 +27,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -58,12 +58,12 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — รับ Alert + เปิด Ticket
+### Step 1 — รับ Alert + เปิด Ticket
 จดบันทึก **Process Name**, Process Path, **Parent Process**, SHA256 Hash, Command Line
 
-### 🔹 Step 2 — ตรวจสอบ Process ที่ถูก Detect
+### Step 2 — ตรวจสอบ Process ที่ถูก Detect
 
 | Process Name | 🚦 ความเสี่ยง |
 |:------------|:-------------|
@@ -79,7 +79,7 @@ flowchart TD
 | `wscript.exe`, `mshta.exe` | ⚠️ **น่าสงสัยมาก** |
 | ซอฟต์แวร์ที่ Sign แล้ว | ✅ อาจเป็น FP |
 
-### 🔹 Step 3 — วิเคราะห์ Storyline
+### Step 3 — วิเคราะห์ Storyline
 
 > [!WARNING]
 > **สัญญาณ Process Hollowing:**
@@ -91,10 +91,10 @@ flowchart TD
 > 1. `VirtualAlloc` ด้วย `PAGE_EXECUTE_READWRITE`
 > 2. เขียน Data เข้า Memory แล้วรัน
 
-### 🔹 Step 4 — ตรวจ Hash VirusTotal
+### Step 4 — ตรวจ Hash VirusTotal
 ดู Detection Rate, Classification, Relations
 
-### 🔹 Step 5 — ตัดสินใจ
+### Step 5 — ตัดสินใจ
 
 | เงื่อนไข | 🚦 วินิจฉัย |
 |:--------|:----------|
@@ -104,7 +104,7 @@ flowchart TD
 | Dev Tool ที่ Sign แล้ว (JIT Compiler) | ❌ Possible **FP** |
 | Security SW ทำ Runtime Protection | ❌ Possible **FP** |
 
-### 🔹 Step 6-7 — Containment + Remediation
+### Step 6-7 — Containment + Remediation
 
 | ลำดับ | การดำเนินการ |
 |:-----:|:------------|
@@ -115,11 +115,11 @@ flowchart TD
 | 5️⃣ | **Reboot** เครื่อง → เคลียร์ Memory ที่ถูก Inject |
 | 6️⃣ | ลบ Persistence + **Full Scan** |
 
-### 🔹 Step 8-9 — Scope + Post-Check + ปิด Ticket
+### Step 8-9 — Scope + Post-Check + ปิด Ticket
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -129,7 +129,7 @@ flowchart TD
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
 - ✅ Enable **Memory Protection** Features
@@ -139,4 +139,4 @@ flowchart TD
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -26,7 +26,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -58,9 +58,9 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — รับ Alert และเปิด Incident Ticket
+### Step 1 — รับ Alert และเปิด Incident Ticket
 
 1. เข้า **SentinelOne Console** → **Incidents** หรือ **Threats**
 2. ค้นหา Alert: `spoolsv.exe detected as Malware`
@@ -78,7 +78,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 2 — ตรวจสอบ File Path ⭐ (จุดตัดสินสำคัญ)
+### Step 2 — ตรวจสอบ File Path ⭐ (จุดตัดสินสำคัญ)
 
 | File Path | 🚦 การวินิจฉัย | ➡️ ขั้นตอนถัดไป |
 |:----------|:-------------|:--------------|
@@ -89,7 +89,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 3 — ตรวจสอบ spoolsv.exe ใน System32
+### Step 3 — ตรวจสอบ spoolsv.exe ใน System32
 
 > [!NOTE]
 > ทำ Step นี้ **เฉพาะกรณีไฟล์อยู่ใน** `C:\Windows\System32\`
@@ -103,7 +103,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 4 — ตรวจสอบ Hash ด้วย VirusTotal
+### Step 4 — ตรวจสอบ Hash ด้วย VirusTotal
 
 1. คัดลอก **SHA256 Hash** → ค้นหาใน **[VirusTotal](https://www.virustotal.com)**
 2. ตรวจสอบ Detection Rate, Family Name, First Seen Date
@@ -111,7 +111,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 5 — ตรวจสอบ Attack Storyline
+### Step 5 — ตรวจสอบ Attack Storyline
 
 ดูใน **Attack Storyline**: Network Connections, File Drops, Registry Changes, Lateral Movement
 
@@ -119,7 +119,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 6 — Scope Analysis
+### Step 6 — Scope Analysis
 
 ```
 FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
@@ -130,7 +130,7 @@ FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 
 ---
 
-### 🔹 Step 7 — Containment
+### Step 7 — Containment
 
 | ลำดับ | การดำเนินการ | วิธีทำ |
 |:-----:|:------------|:------|
@@ -140,7 +140,7 @@ FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 
 ---
 
-### 🔹 Step 8 — Remediation
+### Step 8 — Remediation
 
 | กรณี | การแก้ไข |
 |:-----|:--------|
@@ -149,7 +149,7 @@ FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 
 ---
 
-### 🔹 Step 9-10 — Post-Check และปิด Incident
+### Step 9-10 — Post-Check และปิด Incident
 
 1. ⏱️ รอ 15-30 นาที → ตรวจสอบ Alert ใหม่
 2. ปลด Network Quarantine → แจ้ง End User
@@ -160,7 +160,7 @@ FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -170,7 +170,7 @@ FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ **ติดตั้ง Patch** สำหรับ Print Spooler Vulnerability ทุกเครื่อง
 - ✅ **Disable Print Spooler** บนเครื่องที่ไม่ต้องใช้พิมพ์ (เช่น Server)
@@ -180,4 +180,4 @@ FileName = "spoolsv.exe" AND (NOT FilePath Contains "System32")
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

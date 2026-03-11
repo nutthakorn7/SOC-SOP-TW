@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -29,7 +29,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -61,19 +61,19 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — รับ Alert และเปิด Incident Ticket
+### Step 1 — รับ Alert และเปิด Incident Ticket
 จดบันทึก **File Path**, SHA256 Hash, Parent Process, Command Line Arguments
 
-### 🔹 Step 2 — ตรวจสอบ File Path ⭐
+### Step 2 — ตรวจสอบ File Path ⭐
 
 | ผลตรวจสอบ | ➡️ ขั้นตอนถัดไป |
 |:---------|:--------------|
 | Path = `C:\Windows\System32\` | ไป Step 3 (ตรวจเพิ่ม) |
 | Path ≠ System32 | 🔴 **ปลอมแน่นอน** → ข้ามไป Step 5 |
 
-### 🔹 Step 3 — ตรวจสอบ svchost.exe ใน System32
+### Step 3 — ตรวจสอบ svchost.exe ใน System32
 
 | รายการ | ✅ ปกติ | ❌ น่าสงสัย |
 |:------|:-------|:----------|
@@ -82,7 +82,7 @@ flowchart TD
 | Network | Microsoft Services เท่านั้น | IP ที่ไม่รู้จัก |
 | Loaded DLLs | จาก System32 ทั้งหมด | DLL จาก Users/Temp/AppData |
 
-### 🔹 Step 4 — ตรวจสอบ Process Injection
+### Step 4 — ตรวจสอบ Process Injection
 
 > [!WARNING]
 > สัญญาณของ Process Injection:
@@ -90,11 +90,11 @@ flowchart TD
 > - Memory Usage สูงผิดปกติ
 > - Network Traffic ไปยัง IP ที่ไม่ใช่ Microsoft
 
-### 🔹 Step 5-6 — Hash Check + Scope Analysis
+### Step 5-6 — Hash Check + Scope Analysis
 
 ค้นหาใน VirusTotal + Deep Visibility
 
-### 🔹 Step 7 — Containment
+### Step 7 — Containment
 
 | ลำดับ | การดำเนินการ | ⚠️ ข้อควรระวัง |
 |:-----:|:------------|:-------------|
@@ -102,20 +102,20 @@ flowchart TD
 | 2️⃣ | Kill Process | svchost ปลอม → Kill ปลอดภัย / ตัวจริง → Windows Restart |
 | 3️⃣ | Quarantine File | — |
 
-### 🔹 Step 8 — Remediation
+### Step 8 — Remediation
 
 | กรณี | การแก้ไข |
 |:-----|:--------|
 | **ปลอมชื่อ (Path อื่น)** | Remediate + Rollback + ลบ Service/Persistence |
 | **Process Injection** | Reboot เคลียร์ Memory + ลบ DLL ที่ Inject |
 
-### 🔹 Step 9-10 — Post-Check + ปิด Ticket
+### Step 9-10 — Post-Check + ปิด Ticket
 
 ⏱️ รอ 15-30 นาที → ตรวจสอบ → ปลด Quarantine → ปิด Ticket
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -125,7 +125,7 @@ flowchart TD
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
 - ✅ Enable **Anti-Tampering**
@@ -136,4 +136,4 @@ flowchart TD
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

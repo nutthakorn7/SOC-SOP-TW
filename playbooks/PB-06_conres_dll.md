@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -24,7 +24,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -54,12 +54,12 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — รับ Alert และเปิด Incident Ticket
+### Step 1 — รับ Alert และเปิด Incident Ticket
 จดบันทึก File Path, SHA256 Hash, **Process ที่โหลด DLL** ⭐
 
-### 🔹 Step 2 — ตรวจสอบ Process ที่โหลด DLL ⭐
+### Step 2 — ตรวจสอบ Process ที่โหลด DLL ⭐
 
 | Process ที่โหลด DLL | 🚦 ความเสี่ยง |
 |:--------------------|:-------------|
@@ -69,7 +69,7 @@ flowchart TD
 | `explorer.exe` | 🟠 **DLL Hijacking** |
 | ซอฟต์แวร์ที่รู้จัก | 🟡 ตรวจสอบเพิ่ม — อาจ FP |
 
-### 🔹 Step 3 — ตรวจสอบ File Path
+### Step 3 — ตรวจสอบ File Path
 
 | File Path | 🚦 ความเสี่ยง |
 |:---------|:-------------|
@@ -78,17 +78,17 @@ flowchart TD
 | `C:\ProgramData\` | 🔴 **สูงมาก** |
 | ร่วมกับ Application ที่ติดตั้ง | 🟡 ต่ำ-กลาง |
 
-### 🔹 Step 4 — ตรวจ Hash VirusTotal
+### Step 4 — ตรวจ Hash VirusTotal
 ค้นหา Hash → ดู Detection Rate, Family Name, Behavior Tab
 
-### 🔹 Step 5 — วิเคราะห์ Storyline (ก่อน + หลัง)
+### Step 5 — วิเคราะห์ Storyline (ก่อน + หลัง)
 
 | ช่วงเวลา | สิ่งที่ต้องดู |
 |:---------|:-----------|
 | **ก่อน** DLL โหลด | มาจาก Email? Download? USB? มี Dropper? |
 | **หลัง** DLL โหลด | Network Connection? สร้างไฟล์? Registry? Credential Dump? |
 
-### 🔹 Step 6-8 — Containment + Remediation
+### Step 6-8 — Containment + Remediation
 
 | ลำดับ | การดำเนินการ |
 |:-----:|:------------|
@@ -97,12 +97,12 @@ flowchart TD
 | 3️⃣ | **Quarantine** file `conres.dll` + Dropper |
 | 4️⃣ | **Remediate** + ลบ Persistence (Services, Registry, Scheduled Tasks) |
 
-### 🔹 Step 9-10 — Post-Check + ปิด Ticket
+### Step 9-10 — Post-Check + ปิด Ticket
 ⏱️ รอ 15-30 นาที → ตรวจสอบ → ปลด Quarantine → ปิด Ticket
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -113,7 +113,7 @@ flowchart TD
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ ตั้ง SentinelOne Policy เป็น **Protect** mode
 - ✅ Enable **DLL Load Monitoring** ใน Deep Visibility
@@ -124,4 +124,4 @@ flowchart TD
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

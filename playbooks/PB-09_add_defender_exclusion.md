@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -27,7 +27,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -56,9 +56,9 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — 🚨 IMMEDIATE ACTIONS
+### Step 1 — 🚨 IMMEDIATE ACTIONS
 
 | ลำดับ | ⚡ ดำเนินการทันที | วิธีทำ |
 |:-----:|:-----------------|:------|
@@ -67,7 +67,7 @@ flowchart TD
 | 3️⃣ | จดบันทึก **Command Line** ⭐ | — |
 | 4️⃣ | เปิด Ticket — **Critical** | — |
 
-### 🔹 Step 2 — วิเคราะห์เนื้อหา Script ⭐
+### Step 2 — วิเคราะห์เนื้อหา Script ⭐
 
 ดู Command Line → ค้นหาว่า Script ทำอะไร:
 
@@ -77,21 +77,21 @@ flowchart TD
 | Exclusion Extension | `-ExclusionExtension ".exe"` | **ประเภทไฟล์ที่ต้องการรัน** |
 | Disable Monitoring | `Set-MpPreference -DisableRealtimeMonitoring $true` | **ปิด Defender ทั้งตัว** |
 
-### 🔹 Step 3 — วิเคราะห์ Storyline
+### Step 3 — วิเคราะห์ Storyline
 
 | ช่วงเวลา | สิ่งที่ต้องดู |
 |:---------|:-----------|
 | **ก่อน** Script รัน | Parent Process? ดาวน์โหลดมาจากไหน? |
 | **หลัง** Script รัน | มี Malware ใน Excluded Path? มี Download? |
 
-### 🔹 Step 4 — ตรวจ Defender Exclusions
+### Step 4 — ตรวจ Defender Exclusions
 
 ใช้ **Remote Shell**:
 ```powershell
 Get-MpPreference | Select-Object ExclusionPath, ExclusionExtension
 ```
 
-### 🔹 Step 5 — ค้นหามัลแวร์ที่ซ่อน
+### Step 5 — ค้นหามัลแวร์ที่ซ่อน
 
 ```
 FilePath Contains "<Excluded Path>" AND EventType = "File Creation"
@@ -99,7 +99,7 @@ FilePath Contains "<Excluded Path>" AND EventType = "File Creation"
 
 → **Full Scan** เครื่อง: Actions → "Initiate Scan"
 
-### 🔹 Step 6 — ลบ Exclusions + Remediation
+### Step 6 — ลบ Exclusions + Remediation
 
 ```powershell
 Remove-MpPreference -ExclusionPath "C:\Users"
@@ -112,19 +112,19 @@ Set-MpPreference -DisableRealtimeMonitoring $false
 > 2. ✅ Real-time Protection เปิดอยู่
 > 3. ✅ Malware ที่ซ่อนถูกลบแล้ว
 
-### 🔹 Step 7 — Scope Analysis
+### Step 7 — Scope Analysis
 
 ```
 CmdLine Contains "Add-MpPreference -ExclusionPath"
 ```
 
-### 🔹 Step 8 — Post-Check + ปิด Ticket
+### Step 8 — Post-Check + ปิด Ticket
 
 ⏱️ รอ 30 นาที → ตรวจสอบ → ปลด Quarantine → **Verdict = True Positive**
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -135,7 +135,7 @@ CmdLine Contains "Add-MpPreference -ExclusionPath"
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ **Enable Tamper Protection** ใน Windows Defender
 - ✅ **Disable** สิทธิ์ผู้ใช้เปลี่ยน Defender Settings (Group Policy)
@@ -146,4 +146,4 @@ CmdLine Contains "Add-MpPreference -ExclusionPath"
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

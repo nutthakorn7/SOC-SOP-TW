@@ -1,43 +1,40 @@
 <h1 align="center">🔐 Exclusion Policy Guide</h1>
-<h4 align="center">วิธีสร้าง Exclusion ใน SentinelOne อย่างปลอดภัย — ไม่เปิดช่องโหว่</h4>
+<h4 align="center">สร้าง Exclusion อย่างไร ไม่ให้เปิดช่องโหว่โดยไม่รู้ตัว</h4>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Tool-SentinelOne-6C2DC7?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Level-สำคัญมาก-red?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/ความสำคัญ-สูงมาก-red?style=for-the-badge" />
 </p>
 
 ---
 
-## 🎯 Exclusion คืออะไร?
+## Exclusion คืออะไร? ทำไมต้องระวัง?
 
-**Exclusion** = การบอก SentinelOne ว่า **"อย่าตรวจจับสิ่งนี้"**
+**Exclusion** คือการบอก SentinelOne ว่า *"อย่าตรวจจับสิ่งนี้"* — ใช้เมื่อ Alert เป็น False Positive ที่ยืนยันแล้ว
 
-ใช้เมื่อ: SentinelOne ตรวจจับซอฟต์แวร์ที่ **ถูกต้อง** แต่แจ้งเตือนว่า Malicious (False Positive)
+ฟังดูเรียบง่าย แต่ในทางปฏิบัติ **Exclusion ที่สร้างไม่ดี** เป็นหนึ่งในสาเหตุหลักที่ทำให้มัลแวร์หลุดรอดการตรวจจับ
 
 > [!CAUTION]
-> **Exclusion ที่สร้างไม่ดี = เปิดประตูให้มัลแวร์!**
-> 
-> ถ้า Exclude กว้างเกินไป มัลแวร์จะซ่อนตัวใน Path ที่ถูก Exclude แล้ว SentinelOne จะ **มองไม่เห็น**
+> **เคสที่พบบ่อย**: Analyst เจอ FP จาก `C:\Program Files\SomeApp\` แล้ว Exclude ทั้งโฟลเดอร์
+> → ผ่านไป 2 สัปดาห์ มัลแวร์วางไฟล์ไว้ใน Path เดียวกัน → SentinelOne มองไม่เห็น → โดนเต็มๆ
 
 ---
 
-## 📊 Flowchart — ควรสร้าง Exclusion ไหม?
+## ก่อนสร้าง Exclusion — ถามตัวเองก่อน
 
 ```mermaid
 flowchart TD
-    A["🔔 Alert เป็น False Positive"] --> B{"ยืนยัน FP แล้ว 100%?"}
-    B -->|"❌ ไม่แน่ใจ"| C["❌ อย่าสร้าง Exclusion\nวิเคราะห์เพิ่ม"]
-    B -->|"✅ แน่ใจ"| D{"ซอฟต์แวร์มี Digital Signature?"}
-    D -->|"✅ มี"| E["ใช้ Certificate-based Exclusion\n(ปลอดภัยที่สุด)"]
-    D -->|"❌ ไม่มี"| F{"มี SHA256 Hash?"}
-    F -->|"✅ มี"| G["ใช้ Hash-based Exclusion\n(ปลอดภัย)"]
-    F -->|"❌ ไม่มี"| H["ใช้ Path + FileName\n(ระวัง!)"]
-    E --> I["สร้าง Exclusion\n+ บันทึกลง Ticket"]
+    A["FP ที่ต้องการ Exclude"] --> B{"ยืนยัน FP แล้ว 100%\nทั้ง VT + Storyline?"}
+    B -->|"ยังไม่แน่ใจ"| C["หยุด! วิเคราะห์เพิ่มก่อน\nอย่าเพิ่ง Exclude"]
+    B -->|"แน่ใจ"| D{"ซอฟต์แวร์มี\nDigital Signature ไหม?"}
+    D -->|"มี"| E["ใช้ Certificate Exclusion\nปลอดภัยที่สุด"]
+    D -->|"ไม่มี"| F{"Hash คงที่ไหม?\nหรือ Update บ่อย?"}
+    F -->|"คงที่"| G["ใช้ Hash Exclusion"]
+    F -->|"Update บ่อย"| H["ใช้ Path + FileName\nแต่ต้องระวัง"]
+    E --> I["สร้าง Exclusion + จดเหตุผลไว้"]
     G --> I
     H --> I
-    I --> J["Review ทุก 3 เดือน"]
 
-    style A fill:#ffd43b,color:#000
     style C fill:#ff0000,color:#fff
     style E fill:#51cf66,color:#fff
     style G fill:#51cf66,color:#fff
@@ -46,128 +43,100 @@ flowchart TD
 
 ---
 
-## 📋 ประเภท Exclusion (เรียงจากปลอดภัยที่สุด)
+## 4 วิธีสร้าง Exclusion — เรียงจากปลอดภัยสุดไปเสี่ยงสุด
 
-### 🟢 1. Certificate / Signer (ปลอดภัยที่สุด)
+### 🟢 วิธีที่ 1: ใช้ Certificate / Signer — **แนะนำ**
+
+ถ้าซอฟต์แวร์มี Digital Signature ให้ Exclude ด้วย Signer Identity
 
 ```
-Exclusion Type: Certificate
 Signer Identity: "Microsoft Corporation"
 ```
 
-| ✅ ข้อดี | ❌ ข้อเสีย |
-|:--------|:---------|
-| ครอบคลุมทุก Version ของซอฟต์แวร์ | ต้องมี Digital Signature |
-| มัลแวร์ปลอม Signer ไม่ได้ | — |
+ทำไมปลอดภัย? เพราะมัลแวร์ปลอม Signer ไม่ได้ (ต้องมี Certificate จริง) และครอบคลุมทุก Version โดยอัตโนมัติ ไม่ต้องมาอัปเดตทุกครั้งที่ซอฟต์แวร์ Update
 
 ---
 
-### 🟢 2. SHA256 Hash (ปลอดภัย)
+### 🟢 วิธีที่ 2: ใช้ SHA256 Hash — **ปลอดภัย**
 
 ```
-Exclusion Type: Hash
 SHA256: a1b2c3d4e5f6...
 ```
 
-| ✅ ข้อดี | ❌ ข้อเสีย |
-|:--------|:---------|
-| แม่นยำ 100% — เฉพาะไฟล์นี้เท่านั้น | ต้องอัปเดตเมื่อซอฟต์แวร์ Update (Hash เปลี่ยน) |
-| มัลแวร์ไม่สามารถใช้ Hash เดียวกัน | — |
+แม่นยำ 100% เพราะ Hash เป็น Fingerprint เฉพาะไฟล์นั้น มัลแวร์ไม่สามารถมี Hash เดียวกันได้
+
+**ข้อเสียเดียว**: พอซอฟต์แวร์ Update → Hash เปลี่ยน → ต้องมาอัปเดต Exclusion ใหม่ ซึ่งบาง App อาจ Update บ่อย
 
 ---
 
-### 🟡 3. Path + File Name (ระวัง!)
+### 🟡 วิธีที่ 3: ใช้ Path + File Name — **ต้องระวัง**
 
 ```
-Exclusion Type: Path
-Path: C:\Program Files\CompanyApp\app.exe
+C:\Program Files\CompanyApp\app.exe
 ```
 
-| ✅ ข้อดี | ❌ ข้อเสีย |
-|:--------|:---------|
-| ไม่ต้องอัปเดตเมื่อ Update | ⚠️ มัลแวร์อาจวางไฟล์ใน Path เดียวกัน |
+ข้อดีคือไม่ต้องอัปเดตตาม Version แต่มีความเสี่ยง — ถ้ามัลแวร์วางไฟล์ชื่อเดียวกันไว้ใน Path เดียวกัน SentinelOne จะมองข้ามไป **ใช้วิธีนี้เฉพาะกรณีที่วิธี 1 และ 2 ทำไม่ได้เท่านั้น**
 
 ---
 
-### 🔴 4. Path Only — ไม่มี File Name (อันตราย!)
-
-```
-❌ อย่าทำ:   C:\Program Files\CompanyApp\*
-❌ อย่าทำ:   C:\Users\*
-❌ อย่าทำ:   C:\Temp\*
-```
+### 🔴 วิธีที่ 4: ใช้ Path อย่างเดียว — **อันตราย ห้ามทำ!**
 
 > [!CAUTION]
-> **ห้าม Exclude ทั้งโฟลเดอร์!** มัลแวร์จะวางไฟล์ในโฟลเดอร์นั้นแล้ว SentinelOne จะมองไม่เห็น
+> **ห้ามทำเด็ดขาด:**
+> ```
+> C:\Program Files\CompanyApp\*
+> C:\Users\*
+> C:\Temp\*
+> ```
+> เท่ากับบอก SentinelOne ว่า *"อะไรก็ตามที่อยู่ในโฟลเดอร์นี้ ไม่ต้องตรวจ"*
+> → มัลแวร์แค่วางไฟล์ไว้ในนั้นก็จบ
 
 ---
 
-## ✅ วิธีสร้าง Exclusion ที่ถูกต้อง
+## วิธีสร้างใน SentinelOne Console
 
-### ขั้นตอนใน SentinelOne Console
-
-1. ไปที่ **Sentinels** → **Exclusions**
-2. กด **"New Exclusion"**
-3. เลือกประเภท:
-
-| ลำดับแนะนำ | ประเภท | เมื่อไหร่ใช้ |
-|:---------:|:------|:---------|
-| 1️⃣ | **Signer Identity** | ซอฟต์แวร์มี Signature |
-| 2️⃣ | **Hash** | ไม่มี Signature แต่มี Hash |
-| 3️⃣ | **Path + File Name** | ไม่มีทั้ง Signature และ Hash คงที่ |
-
-4. ตั้ง **Scope** → เฉพาะ Group ที่จำเป็น (อย่าตั้ง Global!)
-5. ใส่ **Description** → อ้างอิง Incident Ticket #
+1. เข้า **Sentinels** → **Exclusions** → **New Exclusion**
+2. เลือกประเภท (แนะนำ Signer > Hash > Path+File)
+3. **ตั้ง Scope** → เลือกเฉพาะ Group ที่จำเป็น อย่าเลือก Global ถ้าไม่จำเป็น
+4. ใส่ **Description** → เขียนว่าทำไมถึง Exclude พร้อมอ้างอิง Ticket เช่น `FP - Adobe Reader update agent, Ticket #INC-0042`
 
 ---
 
-## ❌ สิ่งที่ห้ามทำ
+## สิ่งที่ต้องทำก่อนกด Create ทุกครั้ง
 
-| ❌ ห้ามทำ | ⚠️ เหตุผล |
-|:---------|:---------|
-| Exclude ด้วย **ชื่อไฟล์อย่างเดียว** (เช่น `app.exe`) | มัลแวร์ตั้งชื่อเดียวกันได้ |
-| Exclude **ทั้งโฟลเดอร์** (เช่น `C:\Users\*`) | เปิดประตูให้มัลแวร์ |
-| Exclude แบบ **Global** (ทุกเครื่อง) | ควรจำกัดเฉพาะ Group |
-| Exclude **ไม่บันทึกเหตุผล** | จำไม่ได้ว่าทำไมถึง Exclude |
-| Exclude แล้ว **ไม่ Review** | Exclusion เก่าอาจไม่จำเป็นแล้ว |
+1. ยืนยัน **False Positive 100%** — ดู VT + Storyline แล้วหรือยัง?
+2. ใช้ **Signer หรือ Hash ก่อน** — Path เป็นทางเลือกสุดท้าย
+3. Scope **เฉพาะ Group** ที่จำเป็น — ไม่ใช่ทุกเครื่อง
+4. ใส่ **Description** อ้างอิง Ticket #
+5. ได้ **อนุมัติจาก SOC Manager** หรือ Senior แล้วหรือยัง?
+6. **บันทึก** ลง Incident Ticket ด้วย
 
----
-
-## ✅ Checklist ก่อนสร้าง Exclusion
-
-| # | ตรวจสอบ |
-|:-:|:-------|
-| 1 | ✅ ยืนยัน **False Positive 100%** จาก VT + Storyline |
-| 2 | ✅ ใช้ **Signer หรือ Hash** ก่อน (ไม่ใช่ Path) |
-| 3 | ✅ ตั้ง Scope เฉพาะ **Group ที่จำเป็น** |
-| 4 | ✅ ใส่ **Description** อ้างอิง Ticket # |
-| 5 | ✅ **ได้รับอนุมัติ** จาก SOC Manager / Senior |
-| 6 | ✅ **บันทึก** ลง Incident Ticket |
+> [!WARNING]
+> **กฎเหล็ก**: ถ้าไม่แน่ใจ 100% ว่าเป็น FP → **อย่า Exclude** → ให้ปรึกษา Senior ก่อนเสมอ
 
 ---
 
-## 🔄 การ Review Exclusion
+## อย่าลืม Review — Exclusion ไม่ใช่สร้างแล้วลืม
 
-| ความถี่ | สิ่งที่ทำ |
-|:-------|:--------|
-| **ทุก 3 เดือน** | Review Exclusion ทั้งหมด |
-| ตรวจสอบ | ซอฟต์แวร์ยังใช้อยู่ไหม? ยังจำเป็นไหม? |
-| ลบ | Exclusion ที่ไม่ใช้แล้ว → **ลบออก** |
-| Update | Hash เปลี่ยนเพราะ Update → อัปเดต Hash |
+ทุก 3 เดือนควร Review Exclusion ทั้งหมด:
+
+- ซอฟต์แวร์ตัวนี้ **ยังใช้อยู่ไหม?** ถ้าไม่ใช้แล้ว → ลบ Exclusion ออก
+- Hash **ยังตรงอยู่ไหม?** ถ้า Update → อัปเดต Hash
+- **ยังจำเป็นอยู่ไหม?** บาง Exclusion อาจไม่จำเป็นแล้วเพราะ SentinelOne อัปเดต Engine
 
 ---
 
-## 📌 ตัวอย่างจาก Playbook
+## ตัวอย่างจาก Playbook ของเรา
 
-| Playbook | ⚠️ ควรระวัง |
-|:---------|:---------|
-| **PB-02** spoolsv.exe FP | Exclude ด้วย **Hash + Path** ทั้งคู่ ห้ามใช้ Path อย่างเดียว |
-| **PB-05** Rufus FP | Exclude ด้วย **Hash จาก rufus.ie** เท่านั้น |
-| **PB-10** bwswfcfg FP | ต้องมี Signer ที่รู้จัก + Hash ก่อน Exclude |
+**PB-02 (spoolsv.exe)** — ถ้ายืนยันว่า FP จริงๆ ต้อง Exclude ด้วย **Hash + Path ทั้งคู่** อย่าใช้ Path อย่างเดียว เพราะมัลแวร์ชอบปลอมชื่อเป็น `spoolsv.exe`
+
+**PB-05 (Rufus)** — Exclude ด้วย **Hash จาก rufus.ie เท่านั้น** ถ้า Hash ไม่ตรงกับ Official อย่า Exclude เด็ดขาด
+
+**PB-10 (bwswfcfg)** — ก่อน Exclude ต้องยืนยันว่ามี **Signer ที่รู้จัก** และ VT ไม่พบอะไรผิดปกติ
 
 ---
 
 <p align="center">
-  <b>🛡️ SOC Team — TW Site</b><br/>
+  <b>SOC Team — TW Site</b><br/>
   <i>อัปเดตล่าสุด: มีนาคม 2026</i>
 </p>

@@ -244,6 +244,6 @@ SrcProcName = "wmiprvse.exe" AND TgtProcName In ("cmd.exe","powershell.exe")
 ---
 
 <p align="center">
-  <b>🛡️ SOC Team — TW Site</b><br/>
+  <b>SOC Team — TW Site</b><br/>
   <i>อัปเดตล่าสุด: มีนาคม 2026</i>
 </p>

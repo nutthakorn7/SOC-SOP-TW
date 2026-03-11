@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -27,7 +27,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -59,9 +59,9 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — รับ Alert และเปิด Incident Ticket
+### Step 1 — รับ Alert และเปิด Incident Ticket
 
 | ข้อมูลที่ต้องจด | ⚡ ความสำคัญ |
 |:----------------|:------------|
@@ -73,7 +73,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 2 — วิเคราะห์ Attack Storyline
+### Step 2 — วิเคราะห์ Attack Storyline
 
 ตรวจสอบ **Command Line Arguments** ของ Child Process:
 
@@ -86,7 +86,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 3 — ระบุแหล่งที่มา
+### Step 3 — ระบุแหล่งที่มา
 
 | Parent Process | 📎 แหล่งที่มาที่เป็นไปได้ |
 |:--------------|:---------------------|
@@ -105,13 +105,13 @@ flowchart TD
 
 ---
 
-### 🔹 Step 4 — ตรวจสอบ Threat Intelligence
+### Step 4 — ตรวจสอบ Threat Intelligence
 
 ตรวจสอบ Hash / URL ใน **[VirusTotal](https://www.virustotal.com)** และ **[AbuseIPDB](https://www.abuseipdb.com)**
 
 ---
 
-### 🔹 Step 5 — การตัดสินใจ
+### Step 5 — การตัดสินใจ
 
 | เงื่อนไข | 🚦 ผลวินิจฉัย |
 |:---------|:-------------|
@@ -123,7 +123,7 @@ flowchart TD
 
 ---
 
-### 🔹 Step 6-7 — Containment + Remediation
+### Step 6-7 — Containment + Remediation
 
 | ลำดับ | การดำเนินการ | เครื่องมือ |
 |:-----:|:------------|:---------|
@@ -157,7 +157,7 @@ commit
 
 ---
 
-### 🔹 Step 8-9 — Scope + ปิด Incident
+### Step 8-9 — Scope + ปิด Incident
 
 ```
 SrcProcParentName In Contains ("winword","excel","outlook") AND TgtProcName In Contains ("cmd","powershell","mshta","wscript")
@@ -165,7 +165,7 @@ SrcProcParentName In Contains ("winword","excel","outlook") AND TgtProcName In C
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -176,7 +176,7 @@ SrcProcParentName In Contains ("winword","excel","outlook") AND TgtProcName In C
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ **Disable VBA Macro** ใน Office ผ่าน Group Policy
 - ✅ ตั้ง **ASR Rules**: Block Office apps from creating child processes
@@ -187,4 +187,4 @@ SrcProcParentName In Contains ("winword","excel","outlook") AND TgtProcName In C
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>

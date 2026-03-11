@@ -8,7 +8,7 @@
 
 ---
 
-## 🎯 Quick Reference
+## สรุปสั้นๆ
 
 | รายการ | รายละเอียด |
 |:------:|:-----------|
@@ -25,7 +25,7 @@
 
 ---
 
-## 📊 Flowchart การตอบสนอง
+## Flowchart ภาพรวม
 
 ```mermaid
 flowchart TD
@@ -53,12 +53,12 @@ flowchart TD
 
 ---
 
-## 📋 ขั้นตอนการตอบสนอง
+## ขั้นตอนการทำงาน
 
-### 🔹 Step 1 — รับ Alert และเปิด Incident Ticket
+### Step 1 — รับ Alert และเปิด Incident Ticket
 จดบันทึก File Path, SHA256 Hash, File Size, แหล่งที่มา
 
-### 🔹 Step 2 — เทียบ Hash กับ Rufus Official ⭐
+### Step 2 — เทียบ Hash กับ Rufus Official ⭐
 
 1. ไปที่ **[rufus.ie](https://rufus.ie)** → ดู Official Hash ของ version 3.13
 2. เทียบ Hash:
@@ -70,7 +70,7 @@ flowchart TD
 
 3. ตรวจ **[VirusTotal](https://www.virustotal.com)**: Detection ≤ 5 (Generic) = อาจ FP / Detection > 10 = Malicious
 
-### 🔹 Step 3 — ตรวจสอบ File Path + แหล่งที่มา
+### Step 3 — ตรวจสอบ File Path + แหล่งที่มา
 
 | File Path | 📎 ที่มา |
 |:---------|:--------|
@@ -82,7 +82,7 @@ flowchart TD
 > [!WARNING]
 > ถ้าดาวน์โหลดจากเว็บ **ที่ไม่ใช่** `rufus.ie` → **น่าสงสัยมาก!**
 
-### 🔹 Step 4 — ตรวจ Storyline
+### Step 4 — ตรวจ Storyline
 
 | พฤติกรรม | ✅ ปกติ (Rufus จริง) | ❌ ผิดปกติ |
 |:---------|:-----------------|:----------|
@@ -91,7 +91,7 @@ flowchart TD
 | สร้าง Child Process | — | ⚠️ น่าสงสัยมาก |
 | เปลี่ยน Registry | — | ⚠️ น่าสงสัย |
 
-### 🔹 Step 5 — การตัดสินใจ (3 ทางเลือก)
+### Step 5 — การตัดสินใจ (3 ทางเลือก)
 
 | ผลตรวจสอบ | 🚦 วินิจฉัย | ➡️ ดำเนินการ |
 |:---------|:----------|:-----------|
@@ -101,7 +101,7 @@ flowchart TD
 
 ---
 
-## 🚨 Escalation Criteria
+## เมื่อไหร่ต้องแจ้งหัวหน้า
 
 | สถานการณ์ | 🎬 ดำเนินการ |
 |:---------|:------------|
@@ -110,7 +110,7 @@ flowchart TD
 
 ---
 
-## 🛡️ แนวทางป้องกัน
+## ป้องกันไม่ให้เจออีก
 
 - ✅ ตั้ง **Application Control** Block ซอฟต์แวร์ที่ไม่ได้รับอนุญาต
 - ✅ ถ้าต้องใช้ → ดาวน์โหลดจาก **rufus.ie** เท่านั้น + Whitelist Hash
@@ -118,4 +118,4 @@ flowchart TD
 
 ---
 
-<p align="center"><i>📅 สร้างโดย SOC Team — อัปเดตล่าสุด: มีนาคม 2026</i></p>
+<p align="center"><i>SOC Team — TW Site | อัปเดตล่าสุด: มีนาคม 2026</i></p>
