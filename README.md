@@ -30,6 +30,8 @@
 > 📌 **ต้องการดูสรุปทุก Alert ในหน้าเดียว?** → [⚡ Quick Reference Card](QUICK_REFERENCE.md) — พิมพ์แปะข้างจอได้!
 >
 > 🔍 **ต้องการ Query สำเร็จรูปสำหรับ Deep Visibility?** → [🔍 Query Cheatsheet](DEEP_VISIBILITY_QUERIES.md) — Copy-Paste ได้เลย!
+>
+> 📚 **ไม่เคยใช้ VirusTotal?** → [📚 VirusTotal Guide](VIRUSTOTAL_GUIDE.md) — คู่มือวิเคราะห์ Hash/IP/URL สำหรับมือใหม่
 
 ---
 
